@@ -1,0 +1,177 @@
+% +--------------------------------------------------------------------+
+% | Sample Chapter 3
+% +--------------------------------------------------------------------+
+
+\cleardoublepage
+
+% +--------------------------------------------------------------------+
+% | Replace "This is Chapter 3" below with the title of your chapter.
+% | LaTeX will automatically number the chapters.
+% +--------------------------------------------------------------------+
+    %\renewcommand{\chaptername}{Part}
+    %\renewcommand{\thechapter}{}
+\chapter{Implementacion}
+\label{makereference}
+
+\section{visión general del sistema}
+La camara proporciona los pixeles de la imagen por bandas. Las primeras operaciones a realizar con estos datos son calcular la media, con ella la deviación y con esta la covarianza. Dadas la relativa simpleza de estas operaciones pero sus altos requisitos en memoria, estas tres operaciones son realizadas en una CPU y sus resultados enviados a la FPGA. La FPGA comenzará el cálculo de las operaciones posteriores solo cuando tenga los resultados completos de la covarianza.
+Los datos calculados por la CPU son introducidos en la FPGA a traves de FIFOs.
+La FPGA calculará entonces la inversa de la matriz. Mientras tanto la CPU tendrá que escribir las medias calculadas y los valores que había recibido anteriormente de la cámara, uno por uno. Cuando termine la inversa, la FPGA realizará las dos últimas multiplicaciones de matrices y guardará los datos resultantes. Con el ultimo pixel procesado, la FPGA escribirá las anomalias ordenadas de mayor a menor en otra fifo para ser leida por la CPU.
+
+\section{explicación por módulos}
+\section{control}
+[Aquí introducir un gráfico de un bus]
+[Y un diagrama de estados]
+El módulo superior sirve para controlar los modulos inferiores, tanto para controlar el transpaso de datos entre ellos como para arbitrar el acceso a las RAMS y las FIFOs que comunican con la CPU.
+
+Cabe mencionar que también realiza ciertas comprobaciones en la escritura de la covarianza para asegurar que la primera división de la inversa no se realiza con un 0, es decir, que la posicion (0, 0) en la matriz de covarianzas es /= 0.
+
+\section{inversa}
+La inversa es con diferencia el módulo más complejo y con más gasto de recursos. Además, el estudio realizado en software ha mostrado que es con diferencia el paso más suspceptible a empeorar la precisión de los resultados finales. Por estas razones se ha hecho especial hincapié en su diseño.
+
+Elección del algoritmo.
+Antes de empezar la implementación se han estudiado varios algoritmos para realizar la inversa.
+Otros estudios como el de este señor han llegado a la misma conclusión. Vaya mierda poner esto pero no el link al pdf. En fin, tengo que buscarlo.
+
+Decomposión QR:
+La decomposicion QR descompone la matriz A en el producto de dos matrices %A = QR, siendo Q una matriz ortogonal y R una matriz triangular superior. A−1=R−1Q−1=R−1QT and R−1 Con esta matriz triangular resulta sencillo calcular la inversa. La conclusión de este estudio ha sido que la decomposicion QR puede ser beneficiosa mientras que se cuente con un modulo de multiplicacion matricial potente o varios modulos que puedan ser ejecutados de forma simultanea. Sin embargo, no aprovecha las ventajas proporcionadas por nuestro sistema como pueden ser un tamaño de matrices determinado.
+
+Inversa por Gauss:
+El metodo dde Gauss Jordan dicta que si tenemos una matriz A que puede ser transformada en la matriz identidad a través de operaciones elementales, estas mismas operaciones tranforman la matriz identidad en A-1. Puesto que es posible ejecutar estas operaciones de golpe e un fila entera y las operaciones entre filas son independientes, este metodo es fácilmente paralelizable.
+Por tanto, este fue el metodo elegido.
+
+A rasgos generales, la ejecucion del algoritmo transcurre tal que:
+	Se genera una matriz identidad
+	Se realizan las mismas operaciones sobre ambas matrices
+	El resultado se encuentra en la matriz generada
+
+Las operaciones elementales se realizan en 3 pasos, primero se transforma la matriz A en forma con triangulo superior, luego se resuelve el triangulo inferior para transformarla en diagonal y finalmente se divide la matriz entre si misma para conseguir la forma row echelon.
+También es posible convertir una fila a row echelon directamente realizando los 3 pasos seguidos, pero esta forma no permite la misma granularidad que permitirá más tarde reducir la acumulacion de error.
+
+Optimizaciones del algoritmo de cara a hardware.
+Las operaciones a realizar en los tres pasos - triangulo, superior y diagonal- son similares, así que con el fin de ahorrar recursos se han implementado sobre la misma lógica. Existe un proceso superior con los contadores para controlar el orden de su ejecución. (counterproc). En el caso de la diagonal, se ha creado un cortociircuito para evitar el calculo de la resta.
+
+Debería poner un dibujito con todos los procesos
+
+Para mejorar el rendimiento del modulo, las operaciones sobre la matriz A y la matriz I se ejecutan de forma simultanea. Además, mientras las operaciones de una fila se encuentran procesandose, las siguientes filas son procesadas. La unica espera ocurre cuando se necesita el resultado de una fila para el procesado de las siguientes. Esto es similar a loop unrolling. Para ello, se usan varios procesos para controlar la lectura, la escritura y la captura de la fila que actua como pivote (writeproc y captureiproc). 
+
+Deberñia poner una rueda con colores con los calculos que están el pipeline, los encolados, etc
+
+Como se puede observar en el algoritmo, el elemento [i] es usado dos veces. Para poder realizar operaciones sobre filas posteriores sin retrasar lecturas, es necesario guardar este dato en una memoria auxiliar y leerlo en el momento en el que se vuelva a necesitar. Esta memoria está construida a partir de una fifo tempconvj.
+
+Además, se puede obervar que el algoritmo exige una comprobacion de un valor en la fila pivote y una psoible rotacion de filas. Esto es necesario ya que este valor es posteriormente el dividendo, por lo que un 0 provocaría un fallo en el cálculo. Par evitar latencias de lectura y escritura, se ha optado por una tabla de renombramiento. Estas comprobaciones se realizan a partir de la primera escritura. Al realizar las comprobaciones en las escrituras, se puede encontrar una fila válida simplemente observando las siguientes escrituras evitando. Esta tabla de escrituras es local, por lo que los resultados tienen que ser reordenados antes de salir del modulo. Puesto que estos trueques solo ocurren en el calculo del triangulo superior, se puede aprovechar el triangulo inferior para reordenarlos. Esto también acontece en la escritura. Los resultados de este reordenamiento van a ser correctos siempre y cuando ambas filas que necesiten ser rotadas se encuentren en el pipeline de procesamiento, que en el caso de  punto fijo tiene aproximandamente un tamaño de 80. Resultados experimentales muestran que rara vez hay que rotar filas (aunque lo suficiente como para ser recomendabke la inclusión de un metodo que lidie con ello), pero que estas rotaciones rara vez exceden más una o dos posiciones en adelante.
+
+En la transofrmación a aritmetica de punto fijo se descubrió que este calculo es que más error llega a introducir en los resultados finales del algoritmo, por lo tanto se ha hecho estudio exhaustivo en  sobre como minimizarlo. Con la tabla de uso de los dsp [referirse a la tabla mencionada anteriormente], se ha intentado econtar el mejor balance entre DSP y menor error introducido en la operacion.
+Para poder aprovechar este balance, ha sido necesario reducir los valores en los que la precision limitada producia desbordamientos y aumentar valores pequeños apra otorgales mas peso en las operaciones. Además, al realizar las operaciones de generacion de identidad, triangulo superior, inferior y diagonal de forma separada, se ha podido colocar diferentes multiplicadores para aumentar la precision todavia más. Estas operaciones se encuentran en el proceso (shitproc)
+Tabla con los resultados con todo en 1, con la generacion de identidad en 29, y con todo metido. 
+
+Por ultimo, cabe decir que existe un error en la generacion de divisores de Xilinx. Cuando se introducen numeros cerca del limite de precision se pierde el control del signo. Por lo tanto se ha colocado un modulo antes de la divison que convierte todos los operandos introducidos en positivos y guarda su posicion en el pipeline. En el momento de producirse los resultados, se comprueba el tag en el pipeline, se calcula el negativo y se sustituye si es neesario. El proceso es divisorproc.
+
+\section{Mean subtract}
+El modulo de mean subtract simplemente realiza la resta de la media a la matriz de pixeles orginal. Este calculo es la deviacion. Aunque ya había sido calculada por la cpu, merece la pena implementarla en la fpga en el caso de que la cpu deba deshechar la deviacion por falta de memoria pero pueda volver a obtener la imagen original de la camra. El calculo de la media si que se requiere puesto que su tamaño es mucho menor.
+El modulo recibe los elementos desde el modulo superior. Los primeros que son la media son guardados en una ram que es tratada como un buffer circular, y los elementos que le siguen son restados directamente y devueltos al modulo superior de nuevo.
+
+
+\section{Matrix multiplication}
+
+N bandas\\
+M pixeles\\
+https://www.harrisgeospatial.com/docs/RXAnomalyDetection.html\\
+
+\noindent This module performs the multiplication between the deviation and inverse matrixes.
+\[ rx(x) = (x-\mu)^{T} K^{-1}_{N \times N} (x-\mu) \]
+
+
+\indent \(K^{-1}_{N \times N}\) \ \ \ being the inverse matrix with a dimension of \(N \times N\),\\
+\indent \((x-\mu)\) \ \	being the deviation of a pixel a dimension of \(N \times 1\) and \\			
+\indent \((x-\mu)^{T}\) \ its transpose, with a dimension of \(1 \times N\).\\
+
+The inverse gets read directly from the inverse module's output BRAM and the deviation matrix from two  FIFOS written by the CPU. The result gets written back to another FIFO.
+
+In this step, the inverse matrix gets effectively multiplied by a unique pixel across all bands. Through row reduction, a single value for this pixel is recovered which can then be mapped to a 2d image.\\
+
+Since the operands are heterogeneous, use is made of the associative law on matrix products that dictates that:
+	\[A * (B * C) = (A * B) * C\]
+	to optimize the operation.\\
+
+
+\newcommand\rb{\colorbox{red!20}}
+\newcommand\bb{\colorbox{blue!20}}
+\newcommand\gb{\colorbox{green!20}}
+\newcommand\rr{\rowcolor{red!20}}
+\newcommand\br{\rowcolor{blue!20}}
+\newcommand\gr{\rowcolor{green!20}}
+
+\noindent Following will be a comparison of the first required multiplication in both methods:
+\begin{quote}
+	\((x-\mu)^{T} K^{-1}_{N \times N}\):	
+	A row from the inverse and the whole column of the deviation get read, each element multiplied with its correspondent and all products added together. If stalls were to be avoided, this sum would need to be computed every cycle, which can easily be achieved with an adder tree.
+\end{quote}
+
+\begin{figure}[h]%t=top, b=bottom, h=here
+\[
+\begin{pmatrix}
+\rr a & b & c \\ 
+\br d & e & f \\ 
+\gr g & h & i
+\end{pmatrix}
+*
+\begin{pmatrix}
+1\\
+2\\
+3
+\end{pmatrix}
+=
+\begin{pmatrix}
+\rr 1*a+2*b+3*c\\
+\br 1*d+2*e+3*f\\
+\gr 1*g+2*h+3*i
+\end{pmatrix} 
+\]
+\caption[Optional: Short caption to appear in List of Figures]{First proposed method for the computation of a single pixel: red, blue and green represent data processed in the first, second and third cycles respectively. Note that the entire deviation data of that pixel gets used every cycle}
+\end{figure}
+\pagebreak
+		
+\begin{quote}
+	\(K^{-1}_{N \times N} (x-\mu)\):
+	The inverse gets also read row by row, but the deviation matrix only by elements. Each element of the first row of the matrix gets multiplied with the first element of the deviation, the result accumulated, and continued with the next pair row/element. This goes for \(N\) cycles, that is, a whole inverse matrix and a whole pixel in the deviation matrix. The result is \(N\) accumulated values which get flushed every \(N\) cycles, which ends up being the same throughput as the former method.
+\end{quote}
+
+\begin{figure}[h]%t=top, b=bottom, h=here
+\[
+\begin{pmatrix}
+\rb1 & \bb 2 & \gb 3
+\end{pmatrix}
+*
+\begin{pmatrix}
+\rr a & b & c \\ 
+\br d & e & f \\ 
+\gr g & h & i
+\end{pmatrix}
+=
+\begin{pmatrix}
+\rb{1*a}+\bb{2*d}+\gb{3*g} & \rb{1*b}+\bb{2*e}+\gb{3*h} & \rb{1*c}+\bb{2*f}+\gb{3*i}
+\end{pmatrix} 
+\]
+\caption[Optional: Short caption to appear in List of Figures]{Second proposed method: red, blue and green represent data processed in the first, second and third cycles respectively. Here only an element of the deviation data gets accessed each cycle.}
+\end{figure}
+
+While both methods have equivalent cost in time -the former has the added latency of the adder tree, the latter the latency of the accumulators- and also similar cost in DSP usage, data input by row is less taxing on the CPU and its FIFO structure can be reused for the second multiplication. Henceforth, the second approach was chosen.
+\\
+
+The second multiplication is similar in both steps, a \(1 \times N\) by \(N \times 1\) multiplication. One operand comes every cycle and each \(N\) cycles all products get added together. This sum is realized through an accumulator.\\
+
+The module contains three subprocesses:
+\begin{itemize}
+	\item \emph{first\_mac} reads the inverse and performs its multiplication with the first FIFO. The products are then accumulated till a whole pixel has been computed.
+	\item \emph{second\_mac} stores the results of \emph{first\_mac} in registers and performs the multiplication with the second FIFO, with the result being accumulated. Every cycle, the registers are shifted so a new multiplication is done.
+	\item \emph{write\_proc} controls the writing of the results from \emph{second\_mac} to the result FIFO.
+\end{itemize}
+
+
+
+\section{sorter}
+ El sorter recibe un valor y un par de coordenadas cada nbandas ciclos. Estos valores son escritos en una memoria ram que actua como una lista ordenada. Cada valor introducido es comparado con la cabeza de la lista, el valor más alto guardado y el otro es guardado en una variable temporal y comparada con el segundo valor en la lista, así sucesivamente. Puesto que se recibe un valor cada nbandas, el numero maximo de valores posibles a almacenar en esta lista es también nbandas. El resto de valores son deshechados. Cuando se ha introducido el ultimo valor, el modulo comunica los pixeles más altos, es decir, más anomalos, al modulo superior para que estos sean comunicados a la cpu.
+\section{ejecucion paso a paso}
+que tengo que poner aqui
+
