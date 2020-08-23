@@ -5,72 +5,138 @@
 
 \section{Motivation and objectives}
 
-La exploración espacial cumple muchos objetivos, el más obvio siendo recopilar información acerca de nuestro planeta y lo que le rodea. Para ello se crean sensores capaces de recopilar información, como por ejemplo antenas o telescopios que son usados tanto desde la Tierra como enviados a bordo de naves espaciales. Uno de ellos son las cámaras hiperespectrales, que toman fotos en cientos de bandas distintas. Estos datos permiten encontrar objetos, detectar materiales o identificar procesos. A medida que la tecnología avanza, estos sensores evolucionan requeriendo de soluciones de procesado acordes para interpretar los datos o comprimirlos y enviarlos a tierra.
+La exploración espacial cumple muchos objetivos, el más obvio siendo recopilar información acerca de nuestro planeta y lo que le rodea. Para ello se crean sensores capaces de recopilar información, como por ejemplo antenas o telescopios que son usados tanto desde la Tierra como enviados a bordo de naves espaciales. Uno de ellos son las cámaras hiperespectrales, que toman fotos en cientos de bandas distintas. Estos datos permiten encontrar objetos, detectar materiales o identificar procesos. A medida que la tecnología avanza, estos sensores evolucionan requiriendo de soluciones de procesado acordes para interpretar los datos o comprimirlos y enviarlos a tierra.
 \\
 El objetivo de este trabajo es la implementación de uno de estos algoritmos de forma que resulte preferente el procesado en la aeronave frente a la transmisión de los datos crudos. Para ello se evaluarán diferentes algoritmos y se escogerá una plataforma acorde a los requisitos de la navegación a bordo.
 
-\section{Past work}
+\section{Related work}
+\\
+\\
+\\
+\\
 \url{https://eprints.ucm.es/15828/1/T33468.pdf}
+\\
+\\
+\\
+\\
 \url{https://www.researchgate.net/publication/220243592_Fast_real-time_onboard_processing_of_hyperspectral_imagery_for_detection_and_classification}
+\\
+\\
+\\
+\\
 \url{https://public.lanl.gov/jt/Papers/onboard-post.pdf}
+\\
+\\
+\\
+\\
 
-En el trabajo realizado por "los chavales que hicieron lo mismo" se realiza un estudio del mismo algoritmo sobre una fpga similar. El resultado es positivo con una reducción del tiempo de calculo frente a soluciones basadas en software. El estudio se realizó sin embargo solo sobre subconjuntos de los datos y nunca sobre una imagen completa.
+En el trabajo realizado por "los chavales que hicieron lo mismo" se realiza un estudio del mismo algoritmo sobre una FPGA similar. El resultado es positivo con una reducción del tiempo de calculo frente a soluciones basadas en software. El estudio se realizó sin embargo solo sobre subconjuntos de los datos y nunca sobre una imagen completa.
 
 En \url{https://public.lanl.gov/jt/Papers/onboard-post.pdf} se propone el procesado de los datos a bordo de una FPGA. Uno de los pasos de este procesado es también el algoritmo RX que se implementará en este trabajo.
 
-tengo que buscar trabajos donde usen fpgas para el espacio, sin tener muy en cuenta esos que requieran real time aunque tampoco es un problema. Está el trabajo del japo en alemania y creo que algún trabajo más.
+tengo que buscar trabajos donde usen FPGAs para el espacio, sin tener muy en cuenta esos que requieran real time aunque tampoco es un problema. Está el trabajo del japonés en Alemania y creo que algún trabajo más.
 
 \section{Hyperspectral imagery}
-Hyperspectral imaging es una técnica que captura la reflectancia de cada pixel a lo largo de muchos espectros de luz.
+Una cámara de fotos estándar permite capturar imágenes compuestas de 3  bandas de luz diferenciadas, que los humanos percibimos como rojo, verde y azul. Sus espectros corresponden con altas longitudes de banda entre $564$ y $580 nm$ para el rojo, medias  entre $534$ y $545 nm$ para el verde y cortas entre $420$ y $440 nm$ para el azul. El resto de espectros resultan invisibles para nuestra vista.
+Sin embargo, las camaras hiperespecrales capturan información en muchos más espectros, tanto entre las bandas visbles como fuera de ellas permitiendo analizarlas.
+\\
+\\
+\includegraphics[height=2.5in]{figures/rgb_vs_hsi.jpeg}
+\\
+Las imagenes capturadas tienen la forma de "hipercubos"
+\\
+\url{https://towardsdatascience.com/what-are-hyper-spectral-images-a5de5d9fa91}
+\\
+\\
 Estos espectros o bandas forman en su conjunto una especie de huella para cada pixel que permite reconocer materiales, diferentes tipos de vegetación, depósitos minerales o contaminantes.
-
+\\
+\\
 \includegraphics[height=2.5in]{figures/cuprite.png}
 \\
-\url{https://www.researchgate.net/figure/USGS-map-showing-the-location-of-different-minerals-in-the-Cuprite-mining-district-in_fig5_263532555}
-\\
 En la imagen se puede observar como al cotejar las imágenes hiperespectrales con huellas de minerales estos pueden ser detectados sobre la corteza terrestre.
+\\
+\url{https://www.researchgate.net/figure/USGS-map-showing-the-location-of-different-minerals-in-the-Cuprite-mining-district-in_fig5_263532555}
 
 \bigskip
-En este tipo de imágenes podemos hablar de tres tipos de resoluciones espacial, temporal y espectral, siendo esta última única en este tipo de cámaras. Local se refiere a la cantidad de metros cubiertos por cada pixel, por lo que para una misma cámara podrá cambiar de una imagen a otra. Resolución temporal se refiere a la cantidad de imágenes que es capaz de tomar una cámara por unidad de tiempo, por lo que será principalmente relevante en el momento de captura de la foto. La última resolución, la espectral, se refiere a la separación entre diferentes longitudes de onda medidos en un rango determinado, es decir cuantas mas bandas capturadas en un rango menor, mayor será la resolución espectral.
-
-\bigskip
-Meter imagen con cubo espectral?
-\url{https://www.sciencedirect.com/topics/computer-science/hyperspectral-image}
-
-\bigskip
+En este tipo de imágenes podemos hablar de tres tipos de resoluciones: espacial, temporal y espectral, siendo esta última única en este tipo de cámaras. Local se refiere a la cantidad de metros cubiertos por cada pixel, por lo que para una misma cámara podrá cambiar de una imagen a otra. Resolución temporal se refiere a la cantidad de imágenes que es capaz de tomar una cámara por unidad de tiempo, por lo que será principalmente relevante en el momento de captura de la foto. La última resolución, la espectral, se refiere a la separación entre diferentes longitudes de onda medidos en un rango determinado, es decir cuantas mas bandas capturadas en un rango menor, mayor será la resolución espectral.
+\\
+\\
 Conforme al avance de la tecnología, estas 3 resoluciones siguen aumentando realzando la necesidad de sistemas de procesado acordes.
 \\
-Diferentes sensores tienen diferentes resoluciones. En este trabajo se han tomado como ejemplo los sensores de los provectos Hydice y Aviris que serán explicado en más detalle en la sección [conjunto de imágenes espectrales analizadas]
+\\
+\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+ \hline
+ \multicolumn{4}{|c|}{Country List} \\
+ \hline
+ Country Name     or Area Name& ISO ALPHA 2 Code &ISO ALPHA 3 Code&ISO numeric Code\\
+ \hline
+ Afghanistan   & AF    &AFG&   004\\
+ Aland Islands&   AX  & ALA   &248\\
+ Albania &AL & ALB&  008\\
+ Algeria    &DZ & DZA&  012\\
+ American Samoa&   AS  & ASM&016\\
+ Andorra& AD  & AND   &020\\
+ Angola& AO  & AGO&024\\
+ \hline
+\end{tabular}
+\\
+Tabla con misiones con cámaras HSI
+\url{https://www.mdpi.com/2072-4292/10/2/157/pdf}
+\\
+\\
+En este trabajo se han tomado como ejemplo los sensores de los provectos Hydice y Aviris que serán explicado en más detalle en la sección [conjunto de imágenes espectrales analizadas]
 
 
 \section{Reconfigurable hardware}
 
-Las FPGA (de sus siglas en inglés, field programmable gate arrays) son chips basados en una matriz de bloques configurables llamada CLB (del ingles, configurable logic block) interconectados a su vez por una red también configurable. Estos dispositivos pueden ser programados después de su fabricación para la lógica deseada. Estos dispositivos se diferencian de ASICS o circuitos integrados de aplicación especifica en que estos últimos no pueden ser reconfigurados después de su fabricación.
+Las FPGA (de sus siglas en inglés, field programmable gate arrays) son chips basados en una matriz de bloques configurables llamada CLB (del ingles, configurable logic block) interconectados a su vez por una red también configurable.
+\\
+\includegraphics[height=2.5in]{figures/clb.png}
+\\
+Un CLB
+\\
+\url{https://www.researchgate.net/figure/Island-style-global-FPGA-architecture-A-unit-tile-consists-of-Configurable-Logic-Block_fig6_323820898}
+\\
+\\
+Estos dispositivos pueden ser programados después de su fabricación para la lógica deseada. Estos dispositivos se diferencian de ASICS o circuitos integrados de aplicación especifica en que estos últimos no pueden ser reconfigurados después de su fabricación.
 \\
 Al contrario que sistemas de propósito general como CPUs o GPUs, está arquitectura permite diseñar algoritmos con anchos de calculo arbitrarios, lo que resulta en muy buen rendimiento a la hora de procesar imágenes.
 \\
+\\
 \includegraphics[height=2.5in]{figures/op_watt.png}
+\\
 ejemplo de operación por watt
+\\
 \url{https://arxiv.org/pdf/1906.11879.pdf}
-
-El entorno espacial no solo limita las capacidades energéticas, también presenta un desafío de cara a la radiación ionizante. Al ser este uno de los mercados objetivo de los fabricantes de fpga, existen numerosos chips con las certificaciones de resistencia a radiación necesarias.
-
+\\
+\\
+\\
+El entorno espacial no solo limita las capacidades energéticas, también presenta un desafío de cara a la radiación ionizante. Al ser este uno de los mercados objetivo de los fabricantes de FPGA, existen numerosos chips con las certificaciones de resistencia a radiación necesarias.
+\\
 Estas ventajas son compartidas tanto por FPGAs como ASICs.
-
+\\
 Las ASICs proporcionan la misma flexibilidad que las fpga a la hora del diseño pero su rigidez a la hora de fabricación les permite lograr un mejor rendimiento al solo incluir la lógica especifica del diseño, sin embargo, su coste en provectos de pequeña a mediana escala resulta prohibitivo. Además, la flexibilidad de las FPGA permite la reconfiguración ya en la nave, permitiendo el uso de diferentes algoritmos o el parcheo de bugs. (Mars Climate Orbiter)
-
-Además, puesto que la mayoría de algoritmos comparten ciertas operaciones básicas como pueden ser almacenamiento u operaciones matemáticas de precisión alta, los fabricantes de FPGA incluyen ciertos bloques prefabricados en el circuito, que aunque quitan cierta flexibilidad proporcionan mejor rendimiento que la misma lógica en CLBs. Estos bloques son principalmente memorias RAM y DSPs que permiten variedad de operaciones, entre ellas multiplicaciones o acumulaciones. Así se permite implementar algoritmos de alto rendimiento donde sería imposible usando solo logica y acercan las FPGA un poco al ámbito de las ASIC.
+\\
+\\
+Además, puesto que la mayoría de algoritmos comparten ciertas operaciones básicas como pueden ser almacenamiento u operaciones matemáticas de precisión alta, los fabricantes de FPGA incluyen ciertos bloques prefabricados en el circuito, que aunque quitan cierta flexibilidad proporcionan mejor rendimiento que la misma lógica en CLBs. Estos bloques son principalmente memorias RAM y DSPs que permiten variedad de operaciones, entre ellas multiplicaciones o acumulaciones. Así se permite implementar algoritmos de alto rendimiento donde sería imposible usando solo lógica y acercan las FPGA un poco al ámbito de las ASIC.
 \\
 \includegraphics[height=2.5in]{figures/FPGA_heterogenea.png}
+\\
+Arquitectura heterogénea de una FPGA moderna
 \\
 \url{https://www.researchgate.net/figure/Heterogeneous-FPGA-platform-depicting-general-configurable-resources-hard-blocks-and_fig2_265125404}
 
 
 \section{Anomaly detection}
+\\
+\\
+\\
+QUIZÁS DEBO HABLAR DE OTROS TIPOS DE ALGORITMOS U OTROS ALGORITMOS DE ANOMALÍAS, O AMBOS
+\\
+\\
+\\
 
 La cantidad de datos que contienen estas imágenes y su gran variedad de usos da lugar a muchos tipos de algoritmos diferentes.
-\\
-Quizás debo hacer una lista con diferentes tipos de algoritmos o diferentes algoritmos de detección de anomalías.
 \\
 \url{https://www.hindawi.com/journals/jece/2013/908906/}
 
@@ -80,23 +146,25 @@ La detección de anomalías es un tipo especial de técnicas de detección de ob
 \section{Project plan}
 Primero se realizará una implementación del algoritmo en software en punto flotante que será validada con programas comerciales como ENVI o Hyspy. Sobre esta base se diseccionarán los algoritmos para poder estudiarlos y acercarlos en la medida de lo posible a su implementación en hardware.
 \\
-A la vez, se estudiárá la posible conversión de estas operaciones a punto fijo para lograr un mayor aprovechamiento de la lógica de la FPGA, en especial de los DSP. Además, el uso de DSP por operación es dependiente de la precision de los operandos[referencia a la tabla posterior]. Es necesario prestar especial detalle para poder minimizar los errores lo máximo posible sin exceder la capacidad del chip. Con este estudio hecho, se procederá a implementar la lógica en punto fijo y comparar los resultados de las dos implementaciones.
+A la vez, se estudiará la posible conversión de estas operaciones a punto fijo para lograr un mayor aprovechamiento de la lógica de la FPGA, en especial de los DSP. Además, el uso de DSP por operación es dependiente de la precision de los operandos[referencia a la tabla posterior]. Es necesario prestar especial detalle para poder minimizar los errores lo máximo posible sin exceder la capacidad del chip. Con este estudio hecho, se procederá a implementar la lógica en punto fijo y comparar los resultados de las dos implementaciones.
 
 
-\section{algoritmo RX}
-Dentro de la detección de anomalías, el algoritmo Rx es el mas usado y es conocido como el benchmark de este tipo de algoritmos.
+\section{RX algorithm}
+Dentro de la detección de anomalías, el algoritmo RX es el mas usado y es conocido como el benchmark de este tipo de algoritmos.
 Los algoritmos de detección de anomalías extraen los objetivos, es decir pixeles o regiones, que sean espectralmente distintos a sus circundantes o al conjunto de datos completo. Para que estos algoritmos sean efectivos, las anomalías deben ser lo suficientemente pequeñas relativamente al fondo. Estos algoritmos tienen la ventaja de no requerir información previa de los objetivos ni compensación por la refracción atmosférica. Además, los errores que pueda haber en la imagen no afectan a la detección de anomalías reales (creo que la mayor parte de esto ya lo he dicho arriba)
+\bigskip
+El algoritmo esta definido por la siguiente expresión:
+\\
+\[\delta ^{RX}(x) = (x-\mu)^{T}K^{-1}(x-\mu)\]
 
-Explicar un poquito el algoritmo en detalle.
-(copiar el algoritmo rx de molero)
-El algoritmo esta definido por la siguiente expresión [expresión]
-
-Donde x es x, e y es y. Es importante decir que los resultados generados por el algoritmo son imágenes en escala de grises. Las anomalías poseen un valor alto, así, la primera anomalía corresponde con el pixel con el valor más alto, y sucesivamente.
+Donde $x$ es un pixel hiperespectral (un vector de tamaño igual al número de bandas), $\mu$ es la media de cada banda y $K$ es la matriz de covarianzass. Es importante decir que los resultados generados por el algoritmo son imágenes en escala de grises. Las anomalías poseen un valor alto, así, la primera anomalía corresponde con el pixel con el valor más alto, y sucesivamente.
 
 El algoritmo está compuesto por lo tanto por los siguientes pasos:
-Calcular la media, la deviación y la covarianza de la imagen
-Calcular la inversa de esta covarianza
-Multiplicar todas las bandas de cada pixel por la inversa, y multiplicar este resultado otra vez por el pixel
-Repetir este ultimo paso para cada pixel
+\begin{itemize}
+\item Calcular la media, la deviación y la covarianza K de la imagen
+\item Calcular $K^{-1}$ es decir, la inversa de la covarianza
+\item Calcular $\delta ^{RX}$ para cada pixel de la imagen
+\item Ordenar los resultados
+\end{itemize}
 
-La complejidad de cada paso está incluida dentro del paréntesis, siendo npixeles el numero de pixeles y nbandas el numero de espectros.
+La fuente de esto es Molero2011.
