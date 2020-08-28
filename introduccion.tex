@@ -10,31 +10,23 @@ La exploración espacial cumple muchos objetivos, el más obvio siendo recopilar
 El objetivo de este trabajo es la implementación de uno de estos algoritmos de forma que resulte preferente el procesado en la aeronave frente a la transmisión de los datos crudos. Para ello se evaluarán diferentes algoritmos y se escogerá una plataforma acorde a los requisitos de la navegación a bordo.
 
 \section{Related work}
-\\
-\\
-\\
-\\
-\url{https://eprints.ucm.es/15828/1/T33468.pdf}
-\\
-\\
-\\
-\\
-\url{https://www.researchgate.net/publication/220243592_Fast_real-time_onboard_processing_of_hyperspectral_imagery_for_detection_and_classification}
-\\
-\\
-\\
-\\
-\url{https://public.lanl.gov/jt/Papers/onboard-post.pdf}
-\\
-\\
-\\
-\\
 
-En el trabajo realizado por "los chavales que hicieron lo mismo" se realiza un estudio del mismo algoritmo sobre una FPGA similar. El resultado es positivo con una reducción del tiempo de calculo frente a soluciones basadas en software. El estudio se realizó sin embargo solo sobre subconjuntos de los datos y nunca sobre una imagen completa.
-
+En (fpgas para analysis hiperespectrales.pdf) "the promise pf reconfigurable computing for hyperspectral imagign onboard systems a review and trends" se realiza un estudio de la situacion actual del uso de las fpga a bordo de aeronaves (supongo que en la version final no pondré el titulo, o sí? porque la oración anterior queda un poco superflua). Se habla de las ventajas que tiene el procesado a bordo y de las ventajas que ofrecen las FPGA frente a otro tipo de soluciones. Finalmente se presentan los resultados obtenidos con dos algoritmos, NFINDR e ISRA.
+\\
+\\
+En (gauss-carlos.pdf) "FPGA implementation of an algorithm for automatically detecting targets in remotely sensed hyperspectral images" se presenta una implementacion de un algoritmo de generacion de objetivos. Se usa un inversor por el metodo de eliminación de gauss jordan al igual que en este trabajo y los resultados se presentan sobre la misma plataforma.
+\\
+\\
+En el trabajo realizado por "los chavales que hicieron lo mismo" se realiza un estudio del mismo algoritmo sobre una FPGA similar. El resultado es positivo con una reducción del tiempo de calculo frente a soluciones basadas en software. Sin embargo, este estudio se realizó solo sobre una implementación en punto flotante lo que lo limito solo a subconjuntos de los resultados
+\\
+\\
+-> Es importante que me baje esto porque no lo encuentro entre mis documentos
 En \url{https://public.lanl.gov/jt/Papers/onboard-post.pdf} se propone el procesado de los datos a bordo de una FPGA. Uno de los pasos de este procesado es también el algoritmo RX que se implementará en este trabajo.
+\\
+\\
+En general, los trabajos anteriores presentan buenos resultados sobre estos sistemas y expectativas a un aumento de uso, motivado por sistemas de captura de imagenes cada vez mas avanzados que emoujan el hardware a sus limites.
 
-tengo que buscar trabajos donde usen FPGAs para el espacio, sin tener muy en cuenta esos que requieran real time aunque tampoco es un problema. Está el trabajo del japonés en Alemania y creo que algún trabajo más.
+
 
 \section{Hyperspectral imagery}
 Una cámara de fotos estándar permite capturar imágenes compuestas de 3  bandas de luz diferenciadas, que los humanos percibimos como rojo, verde y azul. Sus espectros corresponden con altas longitudes de banda entre $564$ y $580 nm$ para el rojo, medias  entre $534$ y $545 nm$ para el verde y cortas entre $420$ y $440 nm$ para el azul. El resto de espectros resultan invisibles para nuestra vista.
@@ -68,15 +60,11 @@ Conforme al avance de la tecnología, estas 3 resoluciones siguen aumentando rea
  \hline
  \multicolumn{4}{|c|}{Country List} \\
  \hline
- Country Name     or Area Name& ISO ALPHA 2 Code &ISO ALPHA 3 Code&ISO numeric Code\\
+ Platform name       & MSI &EnMAP HSI&HyspIRI\\
  \hline
- Afghanistan   & AF    &AFG&   004\\
- Aland Islands&   AX  & ALA   &248\\
- Albania &AL & ALB&  008\\
- Algeria    &DZ & DZA&  012\\
- American Samoa&   AS  & ASM&016\\
- Andorra& AD  & AND   &020\\
- Angola& AO  & AGO&024\\
+ Spectral bands      & 13    &244&   214\\
+ Spatial resolution  &   12-20-60  & 30   &30(60)\\
+ Temporal resolution &5 & 4&  5-16\\
  \hline
 \end{tabular}
 \\
@@ -128,9 +116,6 @@ Arquitectura heterogénea de una FPGA moderna
 
 
 \section{Anomaly detection}
-\\
-\\
-\\
 QUIZÁS DEBO HABLAR DE OTROS TIPOS DE ALGORITMOS U OTROS ALGORITMOS DE ANOMALÍAS, O AMBOS
 \\
 \\

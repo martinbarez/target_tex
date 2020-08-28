@@ -35,17 +35,16 @@ AQUÍ TENGO LA ELECCIÓN DE PONER UN DIAGRAMA DE ESTADOS, PSEUDOCÓDIGO O DEJARL
 \section{Inverter}
 La inversa es con diferencia el módulo más complejo y con más gasto de recursos. Además, el estudio realizado en software ha mostrado que es con diferencia el paso más susceptible a empeorar la precisión de los resultados finales. Por estas razones se ha hecho especial hincapié en su diseño.
 \\
-\subsection{Elección del algoritmo}
+\subsection{Choosing the algorithm}
 Antes de empezar la implementación se han estudiado varios algoritmos para realizar la inversa.
-Otros estudios como el de este señor han llegado a la misma conclusión. Vaya mierda poner esto pero no el link al pdf. En fin, tengo que buscar donde lo leí.
 \\
 \\
-\textbf{Decomposición QR:}
+\textbf{QR decomposition:}
 \\
 La decomposición QR descompone la matriz $A$ en el producto de dos matrices $A = QR$, siendo $Q$ una matriz ortogonal y $R$ una matriz triangular superior. Con esta matriz triangular resulta sencillo calcular la inversa. Sin embargo, aunque la decomposición QR puede ser beneficiosa mientras que se cuente con un modulo de multiplicación matricial potente o varios módulos que puedan ser ejecutados de forma simultanea, como puede ser en una GPU, no aprovecha las ventajas proporcionadas por nuestro sistema como pueden ser un tamaño de matrices determinado.
 \\
 \\
-\textbf{Inversa por Gauss Jordan:}
+\textbf{Gauss Jordan elimination method:}
 \\
 El método de Gauss Jordan dicta que si tenemos una matriz $A$ que puede ser transformada en la matriz identidad a través de operaciones elementales, estas mismas operaciones tranforman la matriz identidad en $A^{-1}$. Puesto que es posible ejecutar estas operaciones elementales en una fila entera y las operaciones entre filas son independientes, este método es fácilmente paralelizable.
 Por tanto, este fue el método elegido.
@@ -60,37 +59,41 @@ A rasgos generales, la ejecución del algoritmo transcurre tal que:
 Estas operaciones elementales se realizan en 3 pasos, primero se transforma la matriz A en forma con triangulo superior, luego se resuelve el triangulo inferior para transformarla en diagonal y finalmente se divide la matriz entre si misma hasta conseguir la forma escalonada reducida por filas. (row canonical form)
 \\
 \\
-ESTO CREO QUE PODRÍA EXPLICARLO MEJOR O METER ALGÚN DIBUJO?
-\\
-\\
-\\
-También es posible calcular la inversa directamente para cada fila, realizando los 3 pasos seguidos, pero esta forma no permite paralelizar cada una de las operaciones.
-\\
-\\
-\\
-CREO QUE TAMBIÉN DEBO METER EL PSEUDOCÓDIGO POR ALGÚN LADO
+\algnewcommand{\LineComment}[1]{\State \(\triangleright\) #1}
 \begin{algorithm}
-\caption{My algorithm}\label{euclid}
-\begin{algorithmic}[1]
-\Procedure{MyProcedure}{}
-\State $\textit{stringlen} \gets \text{length of }\textit{string}$
-\State $i \gets \textit{patlen}$
-\BState \emph{top}:
-\If {$i > \textit{stringlen}$} \Return false
-\EndIf
-\State $j \gets \textit{patlen}$
-\BState \emph{loop}:
-\If {$\textit{string}(i) = \textit{path}(j)$}
-\State $j \gets j-1$.
-\State $i \gets i-1$.
-\State \textbf{goto} \emph{loop}.
-\State \textbf{close};
-\EndIf
-\State $i \gets i+\max(\textit{delta}_1(\textit{string}(i)),\textit{delta}_2(j))$.
-\State \textbf{goto} \emph{top}.
-\EndProcedure
-\end{algorithmic}
+  \caption{Pseudocode of the Gauss Jordan method}
+  \begin{algorithmic}[1]
+    \Require{$A$ is a square matrix with the size $n*n$}
+    \Statex
+    \Function{inverse}{$A$}
+      \For{$i \gets 0 \textrm{ to } n-1$} \Comment{Forward elimination to build the upper trangular matrix}
+      \LineComment{row $i$ acts as the pivot}
+      \If{$A[i][i] = 0$}   \Comment{If the later divisor is 0}
+      	\For{$j \gets 0 \textrm{ to } n-1$}
+      		\If{$A[i][j] \neq 0$}
+       			\State{$A[i] \gets A[j], A[j] \gets A[i]$}
+      		\EndIf
+      	\EndFor
+      \EndIf
+      \For{$j \gets 0 \textrm{ to } n-1$}
+        \State{$A^{-1}[j] \gets A^{-1}[j]-^{-1}A[i]*A[j][i]/A[i][i]$}
+        \State{$A[j] \gets A[j]-A[i]*A[j][i]/A[i][i]$}
+        \Comment{These two operations may run in parallel}
+      \EndFor
+      \LineComment{After a complete iteration of the outer loop, row $i$ contains the desired form}
+      \EndFor
+    \EndFunction
+  \end{algorithmic}
 \end{algorithm}
+
+AQUI TENGO QUE PONER LOS OTROS PASOS DEL ALGORITMO
+\\
+\\
+\\
+También es posible calcular la inversa directamente para cada fila, realizando los 3 pasos seguidos, pero esta forma limita la paralelización entre diferentes filas.
+\\
+\\
+\\
 
 \subsection{Optimizaciones del algoritmo de cara a hardware}
 Las operaciones a realizar en los tres pasos - triangulo, superior y diagonal- son similares, así que con el fin de ahorrar recursos se han implementado sobre la misma lógica. Existe un proceso superior con los contadores para controlar el orden de su ejecución. (counterproc). En el caso de la diagonal, se ha creado un cortociircuito para evitar el calculo de la resta.
@@ -99,29 +102,47 @@ Las operaciones a realizar en los tres pasos - triangulo, superior y diagonal- s
 Debería poner un dibujito con todos los procesos
 \\
 \\
-Para mejorar el rendimiento del modulo, las operaciones sobre la matriz A y la matriz I se ejecutan de forma simultanea. Además, mientras las operaciones de una fila se encuentran procesándose, las siguientes filas son procesadas. La unica espera ocurre cuando se necesita el resultado de una fila para el procesado de las siguientes. Esto es similar a loop unrolling. Para ello, se usan varios procesos para controlar la lectura, la escritura y la captura de la fila que actua como pivote (writeproc y captureiproc). 
+Para mejorar el rendimiento del módulo, las operaciones sobre la matriz A y la matriz I se ejecutan de forma simultanea. Además, mientras las operaciones de una fila se encuentran procesándose, las siguientes filas son procesadas. La unica espera ocurre cuando se necesita el resultado de una fila para el procesado de las siguientes. Esto es similar a loop unrolling. Para ello, se usan varios procesos para controlar la lectura, la escritura y la captura de la fila que actua como pivote (writeproc y captureiproc). 
 \\
 \\
 Debería poner una rueda con colores con los calculos que están el pipeline, los encolados, etc
 \\
 \\
-Como se puede observar en el algoritmo, el elemento [i] es usado dos veces. Para poder realizar operaciones sobre filas posteriores sin retrasar lecturas, es necesario guardar este dato en una memoria auxiliar y leerlo en el momento en el que se vuelva a necesitar. Esta memoria está construida a partir de una fifo tempconvj.
+Como se puede observar en el algoritmo, la fila [j] es usada dos veces.
+\[A^{-1}[j] \gets A^{-1}[j]-^{-1}A[i]*A[j][i]/A[i][i]\]
+Aqui poner colores
+Para poder realizar operaciones sobre filas posteriores sin retrasar lecturas, es necesario guardar este dato en una memoria auxiliar y leerlo en el momento en el que se vuelva a necesitar. Esta memoria está construida a partir de una fifo tempconvj.
 \\
 \\
-Además, se puede obervar que el algoritmo exige una comprobacion de un valor en la fila pivote y una psoible rotacion de filas. Esto es necesario ya que este valor es posteriormente el dividendo, por lo que un 0 provocaría un fallo en el cálculo. Par evitar latencias de lectura y escritura, se ha optado por una tabla de renombramiento. Estas comprobaciones se realizan a partir de la primera escritura. Al realizar las comprobaciones en las escrituras, se puede encontrar una fila válida simplemente observando las siguientes escrituras evitando. Esta tabla de escrituras es local, por lo que los resultados tienen que ser reordenados antes de salir del modulo. Puesto que estos trueques solo ocurren en el calculo del triangulo superior, se puede aprovechar el triangulo inferior para reordenarlos. Esto también acontece en la escritura. Los resultados de este reordenamiento van a ser correctos siempre y cuando ambas filas que necesiten ser rotadas se encuentren en el pipeline de procesamiento, que en el caso de  punto fijo tiene aproximandamente un tamaño de 80. Resultados experimentales muestran que rara vez hay que rotar filas (aunque lo suficiente como para ser recomendabke la inclusión de un metodo que lidie con ello), pero que estas rotaciones rara vez exceden más una o dos posiciones en adelante.
+Además, se puede observar que el algoritmo exige una comprobación en la fila pivote y un posible trueque de filas. Esto es necesario ya que este valor es posteriormente el dividendo, por lo que un 0 provocaría un fallo en el cálculo.
+-> Recibir fila i
+-> Escribir fila i en posicion i
+-> Recibir fila i+1 (nuevo pivote)
+-> Si la fila no contiene un 0 en la posicion i+1, escribir en i+1 y escribir siguiente filas normalmente
+-> Si la fila contiene un 0 en la posicion i+1, escribir en i+2
+-> Recibir fila i+2
+-> Si la fila no contiene un 0 en la posicion i+1, escribir en i+1 y escribir filas a partir de la i+2
+-> Si la fila contiene un 0 en la posicion i+1, escribi...
+joder debo hacer un algoritmo en pseudocodigo
+
+
+
+Al aprovechar las escrituras para realizar estas comprobaciones, se evita el tener que leer filas de forma innecesaria y la latencia que ello conllevaría.
+
+Además, puesto que las memorias RAM requieren de un par de ciclos de latencia para lectura y escritura, 2 y 3 respectivamente, los treques de filas se realizan a través de una tabla de renonbrado. Esta tabla es local, por lo que los resultados tienen que ser reordenados antes de salir del modulo. Puesto que estos trueques solo ocurren en el calculo del triangulo superior, se puede aprovechar el triangulo inferior para reordenarlos. El sistema de reordenamiento es muy simple, los datos entran en el pipeline en el orden en el que se han procesado en el paso anterior y son escritos en su orden natural. Esto implica que los resultados de este reordenamiento van a ser correctos siempre y cuando ambas filas que necesiten ser rotadas se encuentren en el pipeline de procesamiento, que en el caso de  punto fijo tiene aproximandamente un tamaño de 80. Resultados experimentales muestran que rara vez hay que rotar filas (aunque lo suficiente como para ser recomendable la inclusión de un metodo que lidie con ello), pero que estas rotaciones rara vez exceden más una o dos posiciones en adelante.
 \\
 \\
-En la transofrmación a aritmetica de punto fijo se descubrió que este calculo es que más error llega a introducir en los resultados finales del algoritmo, por lo tanto se ha hecho estudio exhaustivo en  sobre como minimizarlo. Con la tabla de uso de los dsp [referirse a la tabla mencionada anteriormente], se ha intentado econtar el mejor balance entre DSP y menor error introducido en la operacion.
-Para poder aprovechar este balance, ha sido necesario reducir los valores en los que la precision limitada producia desbordamientos y aumentar valores pequeños apra otorgales mas peso en las operaciones. Además, al realizar las operaciones de generacion de identidad, triangulo superior, inferior y diagonal de forma separada, se ha podido colocar diferentes multiplicadores para aumentar la precision todavia más. Estas operaciones se encuentran en el proceso (shiftproc)
+En la transformación a aritmética de punto fijo se descubrió que el cálculo de la inversa es que más error llega a introducir en los resultados finales del algoritmo, por lo tanto se ha hecho estudio exhaustivo en  sobre como minimizarlo. Con la tabla de uso de los dsp [referirse a la tabla mencionada anteriormente], se ha intentado encontrar el mejor balance entre DSP y menor error introducido en la operación.
+Para poder aprovechar este balance, ha sido necesario reducir los valores en los que la precision limitada producía desbordamientos y aumentar valores pequeños para otorgarles más peso en las operaciones. Además, al realizar las operaciones de generación de identidad, triangulo superior, inferior y diagonal de forma independiente, se ha podido colocar diferentes desplazamientos y afinar todavía más la resolucion del algoritmo. Estas operaciones se encuentran en el proceso (shiftproc)
 \\
 \\
 Tabla con los resultados con todo en 1, con la generacion de identidad en 29, y con todo metido. 
 \\
 \\
-Por ultimo, cabe decir que existe un error en la generacion de divisores de Xilinx. Cuando se introducen numeros cerca del limite de precision se pierde el control del signo. Por lo tanto se ha colocado un modulo antes de la divison que convierte todos los operandos introducidos en positivos y guarda su posicion en el pipeline. En el momento de producirse los resultados, se comprueba el tag en el pipeline, se calcula el negativo y se sustituye si es neesario. El proceso es divisorproc.
+Por ultimo, cabe decir que existe un error en la generación de divisores de Xilinx. Cuando se introducen números cerca del limite de precision se pierde el control del signo. Por lo tanto se ha colocado un modulo antes de la división que convierte todos los operandos introducidos en positivos y guarda su posición en el pipeline. En el momento de producirse los resultados, se comprueba el tag en el pipeline, se calcula el negativo y se sustituye si es necesario. El proceso es divisorproc.
 
 \section{Mean subtract}
-El modulo de mean subtract simplemente realiza la resta de la media a la matriz de pixeles orginal. Este calculo es la deviacion. Aunque ya había sido calculada por la cpu, merece la pena implementarla en la fpga en el caso de que la cpu deba deshechar la deviacion por falta de memoria pero pueda volver a obtener la imagen original de la camra. El calculo de la media si que se requiere puesto que su tamaño es mucho menor.
+El modulo de mean subtract simplemente realiza la resta de la media a la matriz de pixeles original. Este calculo es la deviacion. Aunque ya había sido calculada por la cpu, merece la pena implementarla en la fpga en el caso de que la cpu deba deshechar la deviacion por falta de memoria pero pueda volver a obtener la imagen original de la cámara. El calculo de la media si que se requiere puesto que su tamaño es mucho menor.
 El modulo recibe los elementos desde el modulo superior. Los primeros que son la media son guardados en una ram que es tratada como un buffer circular, y los elementos que le siguen son restados directamente y devueltos al modulo superior de nuevo.
 
 
