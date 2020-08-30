@@ -86,21 +86,16 @@ Estas operaciones elementales se realizan en 3 pasos, primero se transforma la m
   \end{algorithmic}
 \end{algorithm}
 
-AQUI TENGO QUE PONER LOS OTROS PASOS DEL ALGORITMO
-\\
-\\
-\\
 También es posible calcular la inversa directamente para cada fila, realizando los 3 pasos seguidos, pero esta forma limita la paralelización entre diferentes filas.
 \\
 \\
 \\
 
 \subsection{Optimizaciones del algoritmo de cara a hardware}
+\includegraphics[height=3.5in]{figures/gauss.jpg}
+\\
+\\
 Las operaciones a realizar en los tres pasos - triangulo, superior y diagonal- son similares, así que con el fin de ahorrar recursos se han implementado sobre la misma lógica. Existe un proceso superior con los contadores para controlar el orden de su ejecución. (counterproc). En el caso de la diagonal, se ha creado un cortociircuito para evitar el calculo de la resta.
-\\
-\\
-Debería poner un dibujito con todos los procesos
-\\
 \\
 Para mejorar el rendimiento del módulo, las operaciones sobre la matriz A y la matriz I se ejecutan de forma simultanea. Además, mientras las operaciones de una fila se encuentran procesándose, las siguientes filas son procesadas. La unica espera ocurre cuando se necesita el resultado de una fila para el procesado de las siguientes. Esto es similar a loop unrolling. Para ello, se usan varios procesos para controlar la lectura, la escritura y la captura de la fila que actua como pivote (writeproc y captureiproc). 
 \\
@@ -115,6 +110,7 @@ Para poder realizar operaciones sobre filas posteriores sin retrasar lecturas, e
 \\
 \\
 Además, se puede observar que el algoritmo exige una comprobación en la fila pivote y un posible trueque de filas. Esto es necesario ya que este valor es posteriormente el dividendo, por lo que un 0 provocaría un fallo en el cálculo.
+\\
 -> Recibir fila i
 -> Escribir fila i en posicion i
 -> Recibir fila i+1 (nuevo pivote)
@@ -123,16 +119,19 @@ Además, se puede observar que el algoritmo exige una comprobación en la fila p
 -> Recibir fila i+2
 -> Si la fila no contiene un 0 en la posicion i+1, escribir en i+1 y escribir filas a partir de la i+2
 -> Si la fila contiene un 0 en la posicion i+1, escribi...
+\\
+\\
 joder debo hacer un algoritmo en pseudocodigo
-
-
-
+\\
+\\
 Al aprovechar las escrituras para realizar estas comprobaciones, se evita el tener que leer filas de forma innecesaria y la latencia que ello conllevaría.
-
+\\
+\\
 Además, puesto que las memorias RAM requieren de un par de ciclos de latencia para lectura y escritura, 2 y 3 respectivamente, los treques de filas se realizan a través de una tabla de renonbrado. Esta tabla es local, por lo que los resultados tienen que ser reordenados antes de salir del modulo. Puesto que estos trueques solo ocurren en el calculo del triangulo superior, se puede aprovechar el triangulo inferior para reordenarlos. El sistema de reordenamiento es muy simple, los datos entran en el pipeline en el orden en el que se han procesado en el paso anterior y son escritos en su orden natural. Esto implica que los resultados de este reordenamiento van a ser correctos siempre y cuando ambas filas que necesiten ser rotadas se encuentren en el pipeline de procesamiento, que en el caso de  punto fijo tiene aproximandamente un tamaño de 80. Resultados experimentales muestran que rara vez hay que rotar filas (aunque lo suficiente como para ser recomendable la inclusión de un metodo que lidie con ello), pero que estas rotaciones rara vez exceden más una o dos posiciones en adelante.
 \\
 \\
 En la transformación a aritmética de punto fijo se descubrió que el cálculo de la inversa es que más error llega a introducir en los resultados finales del algoritmo, por lo tanto se ha hecho estudio exhaustivo en  sobre como minimizarlo. Con la tabla de uso de los dsp [referirse a la tabla mencionada anteriormente], se ha intentado encontrar el mejor balance entre DSP y menor error introducido en la operación.
+\\
 Para poder aprovechar este balance, ha sido necesario reducir los valores en los que la precision limitada producía desbordamientos y aumentar valores pequeños para otorgarles más peso en las operaciones. Además, al realizar las operaciones de generación de identidad, triangulo superior, inferior y diagonal de forma independiente, se ha podido colocar diferentes desplazamientos y afinar todavía más la resolucion del algoritmo. Estas operaciones se encuentran en el proceso (shiftproc)
 \\
 \\
