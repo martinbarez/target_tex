@@ -53,25 +53,3 @@ Dependiendo del ancho de los operandos, la operación usará una cantidad difere
 
 
 \section{Validation and precision}
-->Esto estaba en el indice pero no sé si aquí debo poner otra cosa y las gráficas al final de todo en resultados. Soy consciente que tampoco ayuda que no haya hecho las gráficas y que solo haya placeholders
-\\
-\\
-Antes de intentar mejorar la precisión del core hay que definir las métricas que se van a utilizar para calificarla.
-Para ello se han tomado los resultados de la versión en punto flotante como verdad.
-\\
-\\
-Primeramente, se ha comprobado que cantidad de anomalías detectadas se pueden encontrar en las primeras x posiciones en ambos resultados, sin importar el orden.
-\\
-\includegraphics[height=2.5in]{figures/precision.png}
-\\
-\\
-Ampliando la anterior estrategia, se ha comprobado para los elementos no coincidentes, si se ha detectado algun vecino en el entorno. Un vecino es definido como un pixel adyacente, tanto en linea recta como en diagonal.
-\\
-\includegraphics[height=2.5in]{figures/precision.png}
-\\
-\\
-Para terminar se ha vuelto a extender la primera estrategia, esta vez se ha comprobado si para los no coincidentes se ha encontrado una anomalia con una similaridad espectral menor de 10 grados. (Nota: definir lo que es la similaridad espectral)
-\\
-\includegraphics[height=2.5in]{figures/precision.png}
-\\
-\\

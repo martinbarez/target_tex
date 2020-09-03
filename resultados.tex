@@ -1,8 +1,127 @@
 \cleardoublepage
-\chapter{Resultados}
+\chapter{Results}
 %\label{ch:chapter1}
 \label{makereference}
-\section{plataforma reconfigurabke}
+\section{Reconfigurable platform}
+La arquitectura descrita en la anterior sección ha sido implementada usando el lenguaje VHDL. Para probar su correcto funcionamiento se ha usado el entorno Vivado y la FPGA Virtex 690T. Si bien no es una FPGA con protección frente a radiación, la arquitectura de este alggoritmo es escalable de tal manera que su adaptación a otros tamaños de sensor o FPGAs no debería suponer ningún problema.
+
+\begin{center}
+ \begin{tabular}{|c|c|c|c|c|c|} 
+ \hline
+ Part number & Slices & Logic cells & Flip-Flops & BRAM & DSP Slices \\
+ \hline
+ XCE7VX690T & 108,300 & 693,120 & 866,400 & 1,470 & 3,600\\
+ \hline
+\end{tabular}
+\end{center}
+
+\section{Hyperpectral image datasets}
+Para el trabajo se han empleado dos imagenes hiperespectrales, una tomada por el sensor Hydice y otra por el sensor Aviris. Ambas imagenes son usadas como referente en aplicaciones hiperespectrales. 
+\\
+En el terreno de la escena capturada por Hydice fueron colocados 15 paneles de distinto tamaño en una configuración de 3 x 5. En las siguientes imágene se puede obseervar la imagen en falso color y la ubicación de los paneles como ha sido detectada por un software comercial.
+\begin{figure}[!ht]
+    \begin{tabular}[b]{c|c}\hline
+      Horizontal res & 64 \\ \hline
+      Vertical res & 64 \\ \hline
+      Bands & 210 \\ \hline
+      Spectral res & 400 - 2500nm \\ \hline
+      Spatial res & 1,56meter/pixel \\ \hline
+      Size & 1,6 MB\\ \hline
+    \end{tabular}
+\includegraphics[height=1.5in]{figures/hydice_bad.png}
+\includegraphics[height=1.5in]{figures/hydice_rx.png}
+    \caption{Hydice sensor information and image in false color}
+  \end{figure}
+\\
+\\
+La imagen tomada por el sensor Aviris fue tomada el 16 de septiembre de 2001, cinco días después de los ataques terroristas que derrumbaron las torres del WTC y sus edificios colindantes. La resolución espacial de esta imagen es muy alta ya que se realizó un vuelo a muy baja altura. Junto a la imagen en falso color se proporciona una imagen con las anomalías detectadas por un programa comercial rodeadas a su vez para indicar su posición.
+\begin{figure}[!ht]
+    \begin{tabular}[b]{c|c}\hline
+      Horizontal res & 614 \\ \hline
+      Vertical res & 512 \\ \hline
+      Bands & 224 \\ \hline
+      Spectral res & 360 - 2500nm \\ \hline
+      Spatial res & 1,7meter/pixel \\ \hline
+      Size & 140 MB\\ \hline
+    \end{tabular}
+\includegraphics[height=1.5in]{figures/wtc_bad.png}
+\includegraphics[height=1.5in]{figures/wtc_rx.png}
+    \caption{Aviris sensor sensor information and image in false color}
+  \end{figure}
+\\
+\\
+\section{evaluacion de las anomalias detectadas}
+\subsection{Floating point}
+Los resultados proporcionados por la versión en punto flotante de este sistema son los mismos que los proporcionados por la versión en software equivalente, por lo que esta se puede dar por válida.
+
+\subsection{Fixed point}
+La versión en punto fijo del sistema es una aproximación al sistema en punto flotante con la intención de mantener la mayor precisión posible con un uso limitado de recursos.
+Por tanto, los resultados no son los mismos y hay que realizar una valoración sobre su precisión. Para ello, se han utilizado 3 métricas.
+\\
+\\
+En la primera y más simple, se ha comprobado que cantidad de anomalías detectadas se pueden encontrar en las primeras x posiciones en ambos resultados, sin importar el orden.
+\\
+\\
+Ampliando la anterior estrategia, se ha comprobado para los elementos no coincidentes, si se ha detectado algún vecino en el entorno. Un vecino es definido como un pixel adyacente, tanto en linea recta como en diagonal.
+\\
+\\
+Para terminar se ha vuelto a extender la primera estrategia, esta vez se ha comprobado si para los no coincidentes se ha encontrado una anomalía con una similaridad espectral menor de 5 grados.
+\\
+%https://www.harrisgeospatial.com/docs/SpectralAngleMapper.html
+El Mapeador de Ángulos Espectrales (SAM) es una clasificación espectral basada en la física que utiliza un ángulo n-D para hacer coincidir los píxeles con los espectros de referencia. El algoritmo determina la similitud espectral entre dos espectros calculando el ángulo entre los espectros y tratándolos como vectores en un espacio con una dimensionalidad igual al número de bandas. Esta técnica, cuando se utiliza en los datos de reflectancia calibrados, es relativamente insensible a los efectos de la iluminación y del albedo
+\\
+\\
+\[\alpha = \cos^{-1}\left ( \frac{\sum\limits^{nb}_{i=1}{t_{i}r_{i}}}{\left ( \sum\limits^{nb}_{i=1}{t_{i}^2} \right )^{1/2}\left ( \sum\limits^{nb}_{i=1}{r_{i}^2} \right )^{1/2}} \right )\]
+$\alpha$ = spectral angle between vectors
+\\
+nb = number of spectral bands
+\\
+t = target pixel
+\\
+r = reference pixel
+\\
+
+En los resultados de hydice se puede apreciar como si un pixel no es el detectado, tampoco es un pixel vecino, pero que todos los resultados concuerdan según su firma espectral. Esto es a causa del gran tamaño de los targets a detectar, donde existen varios pixeles en el mismo target y el orden de detección puede variar. La imagen resulta por lo tanto bastante fácil de analizar y se han logrado buenos resultados
+\begin{figure}[!ht]
+	\includegraphics[height=2.0in]{figures/hydice.png}
+	\includegraphics[height=2.0in]{figures/hydice_res.png}
+\end{figure}
+
+La imagen del WTC es sim embargo más compleja, y se puede observar que la detección de pixeles exactos y vecinos falla. Aún así, los resultados se pueden tomar como satisfactorios ya que las firmas espectrales concuerdan.
+\begin{figure}[!ht]
+	\includegraphics[height=2.0in]{figures/wtc.png}
+	\includegraphics[height=2.0in]{figures/wtc_res.png}
+\end{figure}
+
+Cabe destacar que los valores de desplazamiento dentro de los cálculos han sido adaptados para cada imagen con la intención de detectar el mayor número de anomalías posibles, por lo que los resultados obtenidos en un sistema real serán ligeramente menores. Aún así, los valores entre las dos imágenes son bastante similares, pese a la gran diferencia entre los datos que representan.
+\\
+Además, puesto que se trata de un sistema reconfigurable, estos valores pueden ser modificados después de la puesta en marcha del sistema, tanto para aceptar un mayor rango de imagenes como para obtener resultados más exactos.
+
+nota: tengo que incluir una leyenda
+nota: tengo que pintar bien las imágenes para averigüar que estoy analizando realmente y poder hacer una mejor valoración de los resultados
+
+\section{evaluacion del rendimiento}
+A la hora de avaluar el rendimiento hay que evaluar tanto los recursos usados como el tiempo de procesamiento. Estos datos se dan tanto en los obtenidos para los dos sensores como en función de sus caracteristicas, más especificamente número de bandas y de pixeles.
+\\
+Cabe destacar que los datos de rendimiento se han obtenido ignorando la entrada y salida de los datos, que es frecuentemente el cuello de botella en este tipo de sistemas.
+\\
+\begin{center}
+ \begin{tabular}{|c|c|c|c|c|} 
+ \hline
+ Resource & Hydice & Aviris & By size \\ [0.5ex] 
+ \hline\hline
+ LUT & 0 & 0 & 0\\ 
+ \hline
+ Register & 0 & 0 & 0\\ 
+ \hline
+ BRAM & 0 & 0 & 0\\ 
+ \hline
+ DSP & 0 & 0 & 0\\ 
+ \hline
+\end{tabular}
+\end{center}
+
+También se ofrece una comparación del gasto de recursos por módulo, que se encuentra estrechamente relacionado con su complejidad en tiempo
 
 \begin{center}
  \begin{tabular}{|c|c|c|c|c|} 
@@ -36,15 +155,20 @@
 \end{tabular}
 \end{center}
 
-\section{conjunto de images hiperespectrales}
+Finalmente también se proporciona el gasto total de recursos proporcionado por Vivado y las especificaciones de tiempo y frecuencias
 
-Hydice: Bands 	210
-Spectrum [nm] 	400-2500
-Spat.Res. [m] 	0-0 
-Aviris:
-Spectral range: 360 - 2500 nm with a total of 224 bands. 
-667*667 px
-20m -> 12km
-\section{evaluacion de las anomalias detectadas}
-Aqui es donde dudo de si van los graficos anteriores que he puesto en la seccion de transformacion
-\section{evaluacion del rendimiento}
+\begin{center}
+ \begin{tabular}{|c|c|c|c|c|} 
+ \hline
+ Resource & Hydice & Aviris\\ [0.5ex] 
+ \hline\hline
+ periodo & 0 & 0\\ 
+ \hline
+ frecuencia & 0 & 0\\ 
+ \hline
+ setup & 0 & 0\\ 
+ \hline
+ hold & 0 & 0\\ 
+ \hline
+\end{tabular}
+\end{center}
