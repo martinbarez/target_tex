@@ -12,7 +12,7 @@ En la imagen se puede observar la diferencia en uso de recursos, tanto energéti
 Comparación de los señores de Xilinx. lo he sacado de wp491
 \\
 \\
-En el caso de este proyecto, se esperaba encontrar problemas en la implementacion en el caso de que se usara punto flotante para todas las operaciones, que se materializaron en el momento de intentar sintetizar el sistema. Por tanto se procedió con la transformación del algoritmo a punto fijo.
+Debido a la alta complejidad del análisis de imagenes hiperespectrales, las FPGA actuales tienen apenas capacidad para implementar algunos de estos algoritmos. Por lo tanto, uno de los objetivos de este trabajo es realizar dos implementacionbes paralelas, una en punto flotante y otra en fijo y comparar sus resultados.
 
 \section{Fixed point}
 Esta representación consiste de tres partes: el bit de signo, la parte entera y la parte fraccionaria. Su aritmética resulta equivalente a la de los enteros en complemento a dos.

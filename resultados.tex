@@ -3,7 +3,7 @@
 %\label{ch:chapter1}
 \label{makereference}
 \section{Reconfigurable platform}
-La arquitectura descrita en la anterior sección ha sido implementada usando el lenguaje VHDL. Para probar su correcto funcionamiento se ha usado el entorno Vivado y la FPGA Virtex 690T. Si bien no es una FPGA con protección frente a radiación, la arquitectura de este alggoritmo es escalable de tal manera que su adaptación a otros tamaños de sensor o FPGAs no debería suponer ningún problema.
+La arquitectura descrita en la anterior sección ha sido implementada usando el lenguaje VHDL. Para probar su correcto funcionamiento se ha usado el entorno Vivado y la FPGA Virtex 690T. Si bien no es una FPGA con protección frente a radiación, la arquitectura de este algoritmo es escalable de tal manera que su adaptación a otros tamaños de sensor o FPGAs no debería suponer ningún problema.
 
 \begin{center}
  \begin{tabular}{|c|c|c|c|c|c|} 
@@ -16,9 +16,9 @@ La arquitectura descrita en la anterior sección ha sido implementada usando el 
 \end{center}
 
 \section{Hyperpectral image datasets}
-Para el trabajo se han empleado dos imagenes hiperespectrales, una tomada por el sensor Hydice y otra por el sensor Aviris. Ambas imagenes son usadas como referente en aplicaciones hiperespectrales. 
+Para el trabajo se han empleado dos imágenes hiperespectrales, una tomada por el sensor Hydice y otra por el sensor Aviris. Ambas imágenes son usadas como referente en aplicaciones hiperespectrales. 
 \\
-En el terreno de la escena capturada por Hydice fueron colocados 15 paneles de distinto tamaño en una configuración de 3 x 5. En las siguientes imágene se puede obseervar la imagen en falso color y la ubicación de los paneles como ha sido detectada por un software comercial.
+En el terreno de la escena capturada por Hydice fueron colocados 15 paneles de distinto tamaño en una configuración de 3 x 5. En las siguientes imágenes se puede observar la imagen en falso color y la ubicación de los paneles como ha sido detectada por un software comercial.
 \begin{figure}[!ht]
     \begin{tabular}[b]{c|c}\hline
       Horizontal res & 64 \\ \hline
@@ -50,7 +50,7 @@ La imagen tomada por el sensor Aviris fue tomada el 16 de septiembre de 2001, ci
   \end{figure}
 \\
 \\
-\section{evaluacion de las anomalias detectadas}
+\section{Adequacy of approximation}
 \subsection{Floating point}
 Los resultados proporcionados por la versión en punto flotante de este sistema son los mismos que los proporcionados por la versión en software equivalente, por lo que esta se puede dar por válida.
 
@@ -100,8 +100,8 @@ Además, puesto que se trata de un sistema reconfigurable, estos valores pueden 
 nota: tengo que incluir una leyenda
 nota: tengo que pintar bien las imágenes para averigüar que estoy analizando realmente y poder hacer una mejor valoración de los resultados
 
-\section{evaluacion del rendimiento}
-A la hora de avaluar el rendimiento hay que evaluar tanto los recursos usados como el tiempo de procesamiento. Estos datos se dan tanto en los obtenidos para los dos sensores como en función de sus caracteristicas, más especificamente número de bandas y de pixeles.
+\section{Computational efficiency}
+A la hora de avaluar el rendimiento hay que evaluar tanto los recursos usados como el tiempo de procesamiento. Estos datos se dan tanto en los obtenidos para los dos sensores como en función de sus características, más específicamente número de bandas y de pixeles.
 \\
 Cabe destacar que los datos de rendimiento se han obtenido ignorando la entrada y salida de los datos, que es frecuentemente el cuello de botella en este tipo de sistemas.
 \\
@@ -172,3 +172,5 @@ Finalmente también se proporciona el gasto total de recursos proporcionado por 
  \hline
 \end{tabular}
 \end{center}
+
+Aqui debería poner una tabla comparandolo con implementaciones anteriores
