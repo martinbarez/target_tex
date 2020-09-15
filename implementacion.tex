@@ -14,10 +14,9 @@
 \label{makereference}
 
 \section{General overview of the system}
-La cámara proporciona los pixeles de la imagen por bandas. Las primeras operaciones a realizar con estos datos son calcular la media, con ella la deviación y con esta la covarianza. Dadas la relativa simpleza de estas operaciones pero sus altos requisitos en memoria, estas tres operaciones son realizadas en una CPU y sus resultados enviados a la FPGA. La FPGA comenzará el cálculo de las operaciones posteriores solo cuando tenga los resultados completos de la covarianza.
-Los datos calculados por la CPU son introducidos en la FPGA a través de FIFOs.
-La FPGA calculará entonces la inversa de la matriz. Mientras tanto la CPU tendrá que escribir las medias calculadas y los valores que había recibido anteriormente de la cámara, uno por uno. Cuando termine la inversa, la FPGA realizará las dos últimas multiplicaciones de matrices y guardará los datos resultantes. Con el ultimo pixel procesado, la FPGA escribirá las anomalías ordenadas de mayor a menor en otra FIFO para ser leída por la CPU.
-
+The camera provides the pixels in the image by bands. The first operations to be performed with this data are to calculate the average, with it the deviation and then the covariance. Because of the relative simplicity of these operations but their high memory requirements, these three operations are performed on a CPU and their results sent to the FPGA. The FPGA will start the calculation of the subsequent operations only when it has the complete results of the covariance.
+The data calculated by the CPU is entered into the FPGA through FIFOs.
+The FPGA will then calculate the inverse of the matrix. Meanwhile the CPU will have to write the calculated averages and the values it had previously received from the camera, one by one. When the inverse is finished, the FPGA will perform the last two matrix multiplications and save the resulting data. With the last pixel processed, the FPGA will write the anomalies ordered from highest to lowest in another FIFO to be read by the CPU.
 \pagebreak
 
 \begin{figure}
@@ -31,9 +30,9 @@ La FPGA calculará entonces la inversa de la matriz. Mientras tanto la CPU tendr
 
 \section{Description by module}
 \subsection{Control}
-Este módulo actúa sobre los módulos inferiores, tanto para controlar el traspaso de datos entre ellos como para arbitrar el acceso a las RAMS y las FIFOs que comunican con la CPU.
+This module acts on the lower modules, both to control the data transfer between them and to arbitrate the access to the RAMS and the FIFOs that communicate with the CPU.
 
-Cabe mencionar que también realiza ciertas comprobaciones en la escritura de la covarianza para asegurar que la primera división de la inversa no se realiza con un 0, es decir, que la posición (0, 0) en la matriz de covarianzas es distinto de 0.
+It is worth mentioning that it also performs some checks in the covariance transfer to ensure that the first division of the inverse is not performed with a 0, that is, that the position (0, 0) in the covariance matrix is different from 0.
 \\
 \\
 %\begin{lstlisting}
@@ -81,7 +80,7 @@ Cabe mencionar que también realiza ciertas comprobaciones en la escritura de la
 %\clearpage
 
 \subsection{Inverter}
-La inversa es el módulo más complejo y que más recursos hardware consume. Además, el estudio realizado en software ha mostrado que es con diferencia el paso más susceptible de empeorar la precisión de los resultados finales. Por estas razones se ha hecho especial hincapié en su diseño.
+The inverse is the most complex module and the one that consumes more hardware resources. In addition, the study carried out on software has shown that it is by far the step most susceptible to worsening the accuracy of the final results. For these reasons, special emphasis has been placed on its design.
 
 \begin{figure}[h!]
 \centering\textbf{
@@ -89,12 +88,12 @@ La inversa es el módulo más complejo y que más recursos hardware consume. Ade
 \caption{Schematic of the implemented inverter}
   \label{fig:gauss}
 \end{figure}
-Como se puede ver en \autoref{fig:gauss}, existen numerosos procesos y submódulos dentro del inversor. El proceso que actúa como interfaz al exterior es \textit{counter}, que como su nombre indica contiene contadores para calcular las filas que se deben leer, escribir, etc. Es el proceso principal del módulo. Los contadores son traducidos a direcciones por otro par de procesos, más concretamente \textit{addr}, \textit{write} y \textit{stall} y una tabla de renombrado a la que estos tres tienen acceso. Los datos que son leídos de las memorias pasan entonces a estar guardados en almacenamientos temporales o directamente a las unidades aritméticas. Antes de las unidades aritméticas se encuentra otro proceso, \textit{shift}, que desplaza los datos según se modeló en software. Estas unidades son usadas para los tres pasos del algoritmo -triangulo superior, inferior y diagonal- y es el proceso \textit{counter} el que controla este orden. El resto de procesos se explicarán más detalladamente dentro del capítulo.
+As can be seen in \autoref{fig:gauss}, there are numerous processes and sub-modules within the inverter. The process that acts as an interface to the outside is \textit{counter}, which as its name suggests contains counters to calculate the rows to be read, written, etc. It is the main process of the module. The counters are translated into addresses by another pair of processes, more specifically \textit{addr}, \textit{write} and \textit{stall} and a renaming table to which these three have access. The data that are read from the memories are then saved in temporary storage or directly to the arithmetic units. Before the arithmetic units is another process, \textit{shift}, which shifts the data as modeled in software. These units are used for the three steps of the algorithm, upper triangle, lower triangle and diagonal, and it is the \textit{counter} process that controls their execution order. The rest of the processes will be explained in more detail within the chapter.
 
 
-\subsubsection{Optimizaciones del algoritmo de cara a hardware}
-Para mejorar el rendimiento del módulo, las operaciones sobre la matriz $A$ y la matriz $A{-1}$ se ejecutan de forma simultánea. Además, se aprovecha el pipeline del divisor y de los DSP para encolar todas las operaciones consecutivas posibles. Solo ocurre una espera, concretamente mientras se estén procesando cálculos con la fila pivote actual.
-La siguiente tabla muestra las unidades aritméticas que se encuentran dentro del módulo y sus latencias. Estas latencias representan la longitud de su pipeline.
+\subsubsection{Agorithm optimizations for hardware}
+To improve the performance of the module, operations on the $A$ matrix and the $A{-1}$ matrix are executed simultaneously. In addition, the divisor and DSP pipelines are used to queue all possible consecutive operations. Pipeline stalling only occurs, if calculations are still being processed with the last pivot row.
+The following table shows the arithmetic units inside the module and their latencies. These latencies represent the length of its pipeline.
 \newcommand{\hr}[1]{%
   \colorbox{red!20}{$\displaystyle#1$}}
 \newcommand{\hg}[1]{%
@@ -115,7 +114,7 @@ La siguiente tabla muestra las unidades aritméticas que se encuentran dentro de
 \end{tabular}
 \end{center}
 
-Las siguientes ecuaciones indican que cálculos se encuentran en un momento dado dentro del pipeline de los DSP. Los resultados de cada operación son enviados directamente al cálculo de la siguiente operación, a la vez que los contadores controlan que los demás operandos lleguen en el momento correcto.
+The following equations indicate which calculations are found within the DSP pipeline at any given time. The results of each operation are sent directly to the calculation of the next operation, while the counters control that the other operands arrive at the right time.
 \newcommand{\twodots}{\MTFlushSpaceAbove\vdotswithin{\gets}&&\vdotswithin{\gets}\MTFlushSpaceBelow}
 \begin{align*}
 %A^{-1}[87]\gets&A^{-1}[87]-A[i]^{-1}*A[87][i]/A[i][i],\ 
@@ -139,25 +138,25 @@ A^{-1}[0]\gets&\hb{sub\_result},\
 &A[0]\gets&\hb{sub\_result}
 \end{align*}
 
-Uno de los operandos es la fila \textit{j}, que es usada en dos momentos diferentes dentro del algoritmo. Puesto que no se puede realizar una segunda lectura de la BRAM ya que esta se encuentra ocupada realizando las lecturas de las próximas operaciones, este dato es guardado en el momento de lectura en una FIFO y será leído en el momento en el que se vuelva a necesitar.
+One of the operands is the row \textit{j}, which is used at two different times within the algorithm. Since a second read on the BRAM cannot be done since it is busy performing the read of the next operations, this data is stored at the time of reading in a FIFO and will be fetched when needed.
 \newcommand{\highlight}[1]{%
   \colorbox{yellow!20}{$\displaystyle#1$}}
 \begin{figure}[h!]
 \[A^{-1}[j] \gets \highlight{A^{-1}[j]}-A[i]*\highlight{A[j][i]}/A[i][i]\]
-\caption{Como se puede observar en el algoritmo, la fila j es usada dos momentos diferentes.}
+\caption{As can be seen in the algorithm, row j is used at two different times.}
 \end{figure}
 \\
 \\
-Además, se puede observar que en el primer paso en el que se construye la matriz triangular superior, el algoritmo exige una comprobación en la fila pivote y un posible intercambio de filas. Esto es necesario ya que este valor es posteriormente el dividendo, por lo que un 0 provocaría un fallo en el cálculo.
+Additionaly, it can be observed that in the first step in which the upper triangular matrix is constructed, the algorithm requires a check on the pivot row and a possible exchange of rows. This is necessary because this value is later the dividend, so a 0 would cause a failure in the calculation.
 \\
-Las lecturas de memoria BRAM tienen un ciclo de latencia, por lo que leer un valor no adecuado dos ciclos seguidos -en el caso de leer un valor adecuado y uno no adecuado, existiría la posibilidad de realizar un trueque de filas inplace con el pivote y la fila justo posterior- no solo añadiría latencia al cálculo si no que incrementaría la complejidad del módulo. Por lo tanto las comprobaciones del dividendo se realizan en las escrituras, y los trueques necesarios se graban en una tabla de renombrado que será comprobada en el momento de la lectura. Esto permite asegurar que las lecturas van a ser siempre válidas para el cálculo. En el caso de la primera división, este dividendo viene directamente de la CPU y el módulo superior \textit{control} se encarga de reordenar esta fila si fuera necesario.
+BRAM memory readings have a latency cycle, so reading an inappropriate value two cycles in a row -in the case of reading an inappropriate and then an appropriate value, there would be the possibility of performing an inplace row swap with the pivot and the row just after it- would not only add latency to the calculation but also increase the complexity of the module. Therefore the dividend checks are done on the writes, recorded in a renaming table that will be checked at the time of reading. This ensures that the reads will always be valid for the calculation. In the case of the very first division, this dividend comes directly from the CPU and the upper module \textit{control} is responsible for reordering this row if necessary.
 \\
-Esta tabla de renombrado se encuentra en registros por lo que es posible acceder a ella sin ninguna latencia y al solo contener indices no sobrecarga los recursos de la FPGA. Además, esta tabla es local, por lo que los resultados tienen que ser reordenados en la propia RAM antes de salir del módulo de la inversa. Puesto que estos trueques solo ocurren en el cálculo del triangulo superior, se puede aprovechar el triangulo inferior para reordenarlos. El sistema de reordenamiento es muy simple, los datos entran en el pipeline según el orden que existe en la tabla de renombrado y son escritos en su orden natural. Esto implica que los resultados de este reordenamiento van a ser correctos siempre y cuando ambas filas que hayan rotado se encuentren en el pipeline de procesado, que en el caso de  punto fijo tiene aproximadamente un tamaño de 90. Resultados experimentales muestran que rara vez hay que rotar filas -aunque lo suficiente como para ser recomendable la inclusión de un método que lidie con ello-, y que rara vez estas rotaciones exceden más una o dos posiciones en adelante.
+This renaming table is located in registers so it is possible to access it without any latency and as it only contains indexes, it does not overload the FPGA resources. In addition, this table is local, so the results have to be reordered in the RAM itself before leaving the inverse module. Since these swaps only occur in the calculation of the upper triangle, the lower triangle can be used to reorder them. The reordering system is very simple, the data enters the pipeline according to the order that exists in the renaming table and is written in its natural order. This implies that the results of this reordering will be correct as long as both rows that have been rotated are at the same time in the processing pipeline, which in the case of fixed point is approximately 90 in size. Experimental results show that it is rarely necessary to rotate rows -although enough to recommend the inclusion of a method to deal with it-, and that these rotations rarely exceed one or two positions in the pipeline.
 \\
 \\
-En la transformación a aritmética entera se descubrió que el cálculo de la inversa es que más error llega a introducir en los resultados finales del algoritmo, por lo tanto se ha hecho estudio exhaustivo en  sobre como minimizarlo. Para ello ha sido necesario reducir los valores en los que la precisión limitada producía desbordamientos y aumentar valores pequeños para otorgarles más peso en las operaciones. Además, al realizar las operaciones de generación de identidad, triangulo superior, inferior y diagonal de forma independiente, se ha podido colocar diferentes desplazamientos y afinar todavía más la resolución del algoritmo. Estas operaciones se encuentran en el proceso \textit{shift}.
+In the transformation to integer arithmetic it was discovered that the calculation of the inverse is the one introducing more error in the final results of the algorithm, therefore an exhaustive study on how to minimize it has been made. For this it has been necessary to reduce the values in which the limited precision produced overflows and increase small values to give them more weight in the operations. By performing the operations of identity generation, upper triangle, lower triangle and diagonal independently, it has been possible to place different shift values and further refine the resolution of the algorithm. These operations are performed by the \textit{shift} process.
 \\
-También cabe decir que existe un error en la generación de divisores de Xilinx. Cuando se introducen números cerca del limite de precision se pierde el control del signo. Por lo tanto se ha colocado un proceso, \textit{div\_fix}, antes de la división que convierte todos los operandos introducidos en positivos y guarda su posición en un pipeline. En el momento de producirse los resultados, se comprueba el tag en el pipeline, se calcula el negativo y se sustituye si es necesario.
+It should also be said that there is an error in the generation of Xilinx dividers. When you enter numbers near the precision limit you lose control of the sign. Therefore a process, \textit{div\_fix}, that converts all the entered operands into positives and saves their position in a pipeline has been placed before the division. When the results are produced, the tag is checked in the pipeline, the negative is calculated and replaced if necessary.
 
 \subsection{Mean subtract}
 
@@ -167,8 +166,8 @@ También cabe decir que existe un error en la generación de divisores de Xilinx
 \caption{Schematic of mean subtract.}
   \label{fig:subtract}
 \end{figure}
-El módulo de \textit{mean subtract} recibe la media calculada y los pixeles originales de la imagen y los resta. Este cálculo es la deviación y aunque ya había sido calculada por la CPU, es posible que esta última deseche los datos para liberar espacio. El cálculo de la media si que se requiere puesto que se supone que al ser su tamaño mucho menor, la CPU pueda mantenerlo en memoria. En el caso de que la deviación pueda ser recibida directamente desde la CPU, este módulo puede ser simplemente borrado.
-El módulo recibe los elementos desde el módulo superior que los lee de una misma FIFO. Los primeros elementos son la media y son guardados en una BRAM que es tratada como un buffer circular, y los elementos que le siguen son restados directamente y devueltos al módulo superior de nuevo.
+The \textit{mean subtract} module receives the calculated average and the original pixels of the image and subtracts them. This calculation is the deviation and although it had already been calculated by the CPU, it is possible that the latter discards the data to free up space. The calculation of the average is required because it is assumed that its size being much smaller, the CPU can keep it in memory. In case the deviation can be received directly from the CPU, this module can be simply deleted.
+The module receives the elements from the upper module that reads them from the same FIFO. The first elements are the average and are stored in a BRAM that is treated as a circular buffer, and the following elements are directly subtracted and returned to the upper module again.
 
 
 \subsection{Matrix multiplication}
@@ -180,7 +179,7 @@ El módulo recibe los elementos desde el módulo superior que los lee de una mis
 \newcommand\rr{\rowcolor{red!20}}
 \newcommand\br{\rowcolor{blue!20}}
 \newcommand\gr{\rowcolor{green!20}}
-Como se denota arriba \ref{alternativa}, este cálculo puede ser implementado de dos maneras diferentes.
+As noted above,  \ref{alternativa}, this calculation can be implemented in two different ways.
 \noindent Following will be a comparison of the first required multiplication in both methods:
 \begin{quote}
 	\((x-\mu)^{T} K^{-1}_{N \times N}\):	
@@ -258,7 +257,7 @@ The module contains three subprocesses:
 
 
 \subsection{Coordinate sorter}
-Este módulo recibe un valor y un par de coordenadas cada \textit{bandas} ciclos. Estos valores son escritos en una memoria BRAM que actúa como una lista ordenada. Cada valor introducido es comparado con la cabeza de la lista, el valor más alto guardado y el otro es guardado en una variable temporal y comparada con el segundo valor en la lista, así sucesivamente. Puesto que se recibe un valor cada \textit{bandas}, el numero máximo de valores posibles a almacenar en esta lista es también \textit{bandas}. El resto de valores son desechados. Cuando se ha introducido el ultimo valor, el módulo comunica los pixeles más altos, es decir, más anómalos, al módulo superior para que estos sean comunicados a la CPU.
+This module receives a value and a pair of coordinates every \textit{bands} cycles. These values are written in a BRAM memory that acts as an ordered list. Each entered value is compared with the head of the list, the highest value is saved and the other is saved in a temporary variable, compared with the second value in the list, and so on. Since a value is received each \textit{bands}, the maximum number of possible values to be stored in this list is also \textit{bands}. The rest of the values are discarded. When the last value has been introduced, the module communicates the highest pixels, that is, the most anomalous ones, to the superior module so that they are communicated to the CPU.
 
 \begin{figure}[h!]
 \centering\textbf{

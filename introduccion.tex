@@ -4,34 +4,33 @@
 \label{makereference}
 
 \section{Motivation and objectives}
-
-La exploración espacial cumple muchos objetivos, siendo el más obvio recopilar información acerca de nuestro planeta y lo que le rodea. Para ello se crean sensores capaces de recopilar información, como por ejemplo antenas o telescopios que son usados tanto desde la Tierra como enviados a bordo de naves espaciales. Uno de ellos son las cámaras hiperespectrales, que toman fotos en cientos de bandas distintas. Estos datos permiten encontrar objetos, detectar materiales o identificar procesos. A medida que la tecnología avanza, estos sensores evolucionan requiriendo de soluciones de procesado acordes para interpretar los datos o comprimirlos y enviarlos a tierra.
+Space exploration serves many purposes, the most obvious being gathering information about our planet and its surroundings. For this purpose, sensors capable of gathering information are created, such as antennas or telescopes that are used both from the Earth and sent aboard spaceships. One of those are hyperspectral cameras, which take pictures in hundreds of different bands. Their data allows to find objects, detect materials or identify processes. As technology advances, these sensors evolve requiring appropriate processing solutions to interpret the data or compress it and send it to ground.
 \\
 \\
-El objetivo de este trabajo es la implementación de uno de estos algoritmos de forma que resulte preferente el procesado en la aeronave frente a la transmisión de los datos crudos.
+The objective of this work is the implementation of one of these algorithms in a way that the processing in the aircraft is preferable to the transmission of the raw data.
 \\
-Para ello se evaluarán diferentes algoritmos y se escogerá una plataforma hardware. Se realizará una primera implementación del algoritmo en punto flotante y se estudiará su transformación a aritmética de enteros. Este paso es necesario ya que el mayor impedimento de estos algoritmos para ser implementados en hardware es el alto número y complejidad de sus operaciones. Con la aritmética bien definida, se adaptará su implementación y se hará una comparación de precisión y rendimiento entre la primera versión en punto flotante y la versión entera.
+For this purpose, different algorithms will be evaluated and a hardware platform will be chosen. A first implementation of the floating point algorithm will be done and its transformation to integer arithmetic will be studied. This step is necessary because the major impediment of these algorithms to be implemented in hardware is the high number and complexity of its operations. With the arithmetic well defined, its implementation will be adapted and a comparison of accuracy and performance between the first floating point version and the integer version will be made.
 
 \section{Related work}
-En este apartado se va a realizar una revisión del estado del arte sobre el uso de FPGAs en aplicaciones espaciales en general y de implementaciones relacionadas con el algoritmo desarrollado en este trabajo.
+In this section we will review the state of the art on the use of FPGAs in space applications in general and implementations related to the algorithm developed in this work.
 \\
 \\
-En \cite{lopez_promise_2013} se realiza un estudio sobre la situación actual del uso de FPGA a bordo de aeronaves para análisis hiperespectrales y se presentan implementaciones de dos algoritmos, ISRA y N-FINDR. Los resultados muestran numerosas ventajas de las FPGA frente a otro tipo de soluciones como GPUs como pueden ser su menor tamaño y peso y su resistencia frente a radiación. Además se recalca su capacidad de reconfiguración incluso después del lanzamiento del sistema.
+In \cite{lopez_promise_2013} a study is carried out on the current situation of the use of FPGA on board aircraft for hyperspectral analysis and implementations of two algorithms, ISRA and N-FINDR, are presented. The results show numerous advantages of FPGA over other types of solutions such as GPUs, such as its smaller size and weight and its resistance to radiation. In addition, their reconfiguration capabilities even after the system is launched are emphasized.
 \\
 \\
-En \cite{gonzalez_fpga_2016} se presenta una implementación de un algoritmo de generación de objetivos. Se usa un inversor por el método de eliminación de Gauss Jordan al igual que en este trabajo y los resultados se presentan sobre la misma plataforma.
+In \cite{gonzalez_fpga_2016} an implementation of a target generation algorithm is presented. It uses an inverter based on the Gauss Jordan elimination method, same as the one that will be used in this work, and the results are presented on the same platform.
 \\
 \\
-En \cite{colome_garcia_implementacion_2013} se realiza un estudio del mismo algoritmo que se implementará en este trabajo sobre una FPGA. El resultado es positivo con una reducción del tiempo de cálculo frente a soluciones basadas en software. Sin embargo, este estudio se realizó solo sobre una implementación en punto flotante lo que lo limitó al procesado de imágenes hiperespectrales previamente reducidas dimensionalmente.
+In \cite{colome_garcia_implementacion_2013} a study of the same algorithm that will be implemented in this work is carried out on an FPGA. The results are positive with a reduction in calculation time compared to software-based solutions. However, this study was performed only on a floating point implementation which limited it to the processing of previously dimensionally reduced hyperspectral images.
 \\
 \\
-En \cite{theiler_onboard_2018} se propone el procesado de los datos a bordo con el objetivo de reducir el uso de red y acelerar el procesamiento de los datos. Uno de los pasos de este procesado es también el algoritmo RX que se implementará en este trabajo.
+In \cite{theiler_onboard_2018} the processing of data on board is proposed with the aim of reducing network usage and accelerating data processing. One of the steps of this processing is also the RX algorithm that will be implemented here.
 \\
 \\
-En general, los trabajos anteriores presentan buenos resultados sobre estos sistemas y expectativas a un aumento de uso, motivado por sistemas de captura de imágenes cada vez mas avanzados que llevan el hardware a sus limites.
+In general, the previous works present good results on these systems and expectations to an increase of use, motivated by more and more advanced image capture systems that take the hardware to their limits.
 
 \subsection{Reconfigurable hardware}
-Las FPGA (de sus siglas en inglés, field programmable gate arrays) son chips basados en una matriz de bloques configurables llamados CLB (del ingles, configurable logic block) interconectados a su vez por una red también configurable \ref{fig:clb}.
+The FPGA (field programmable gate arrays) are chips based on an array of configurable blocks called CLBs interconnected by an also configurable network \ref{fig:clb}.
 
 \begin{figure}[h!]
 \centering
@@ -42,7 +41,7 @@ Las FPGA (de sus siglas en inglés, field programmable gate arrays) son chips ba
 
 \pagebreak
 
-Al contrario que sistemas de propósito general como CPUs o GPUs, está arquitectura permite diseñar algoritmos con anchos de cálculo arbitrarios, lo que resulta en muy buen rendimiento a la hora de procesar imágenes, tanto energético como temporal \ref{fig:op_watt}.
+Unlike general purpose systems such as CPUs or GPUs, this architecture allows the design of algorithms with arbitrary calculation widths, resulting in very good performance when processing images, both in power and time \ref{fig:op_watt}.
 
 \begin{figure}[h!]
 \centering
@@ -53,16 +52,16 @@ Al contrario que sistemas de propósito general como CPUs o GPUs, está arquitec
 
 \pagebreak
 
-El entorno espacial no solo limita las capacidades energéticas, también presenta un desafío de cara a la radiación ionizante. Al ser este uno de los mercados objetivo de los fabricantes de FPGA, existen numerosos chips con las certificaciones de resistencia a radiación necesarias.
+The space environment not only limits avaible power, it also presents a challenge in the form of ionizing radiation. As this is one of the target markets for FPGA manufacturers, there are numerous chips with the necessary radiation resistance certifications.
 %http://microelectronics.esa.int/techno/fpga_002_01-0-4.pdf
 %https://amstel.estec.esa.int/tecedm/website/biblio/AFLDCIS2010.pdf
 \\
-Las ASICs proporcionan la misma flexibilidad que las FPGA a la hora del diseño pero su rigidez a la hora de fabricación les permite lograr un mejor rendimiento al solo incluir la lógica especifica del diseño, sin embargo, su coste en provectos de pequeña a mediana escala resulta prohibitivo. Además, la flexibilidad de las FPGA permite la reconfiguración ya en la nave, permitiendo el uso de diferentes algoritmos o el parcheo de bugs.
+ASICs provide the same design flexibility as FPGAs but their manufacturing rigidity allows them to achieve better performance by only including the specific design logic. However, their cost in small to medium scale projects is prohibitive. In addition, the flexibility of FPGAs allows reconfiguration already in the ship, allowing the use of different algorithms or bug fixes.
 %https://iopscience.iop.org/article/10.1088/1742-6596/1195/1/012012/pdf
 %https://amstel.estec.esa.int/tecedm/website/stag_ygt/Boada.pdf
 \\
 \\
-Además, puesto que la mayoría de algoritmos comparten ciertas operaciones básicas como pueden ser almacenamiento u operaciones matemáticas de precisión alta, los fabricantes de FPGA incluyen ciertos bloques prefabricados en el circuito, que aunque quitan cierta flexibilidad proporcionan mejor rendimiento que la misma lógica en CLBs. Estos bloques son principalmente memorias RAM y DSPs que permiten variedad de operaciones, entre ellas multiplicaciones o acumulaciones. Esta arquitectura heterogénea \ref{fig:heterogenea} permite implementar algoritmos de alto rendimiento donde sería imposible usando solo lógica y acercan las FPGA un poco al ámbito de las ASIC\cite{zhou_efficient_2013}.
+In addition, since most algorithms share certain basic operations such as storage or high-precision arithmetic operations, FPGA manufacturers include certain prefabricated blocks in the circuit, which although remove some flexibility, provide better performance than the same logic in CLBs. These blocks are mainly RAM blocks and DSPs that allow a variety of operations, including multiplication or accumulation. This heterogeneous architecture \ref{fig:heterogenea} allows the implementation of high performance algorithms where it would be impossible using only logic and brings FPGAs a little closer to the scope of ASICs \cite{zhou_efficient_2013}.
 \\
 \begin{figure}[h!]
 \centering
@@ -73,9 +72,9 @@ Además, puesto que la mayoría de algoritmos comparten ciertas operaciones bás
 \\
 
 \subsection{Hyperspectral imagery}
-Una cámara de fotos estándar permite capturar imágenes compuestas de 3 bandas de luz diferenciadas, que los humanos percibimos como rojo, verde y azul. Sus espectros corresponden con altas longitudes de onda entre $564$ y $580 nm$ para el rojo, medias  entre $534$ y $545 nm$ para el verde y cortas entre $420$ y $440 nm$ para el azul. El resto de espectros resultan invisibles para nuestra vista.
+A standard camera captures images composed of 3 distinct light bands, which we humans perceive as red, green and blue. Their spectra correspond to high wavelengths between $564$ and $580 nm$ for red, mediums between $534$ and $545 nm$ for green and short ones between $420$ and $440 nm$ for blue. The rest of the spectra are invisible to our eyes.
 \\
-Sin embargo, las cámaras hiperespecrales capturan información en muchos más espectros, tanto entre las bandas visibles como fuera de ellas permitiendo analizar un espectro mucho más amplio. Estas bandas suelen mostrarse como una tercera dimensión, dando el nombre de hipercubo a estás imágenes \ref{fig:cube}.
+However, hyperspectral cameras capture information in many more spectra, both between the visible bands and outside them, allowing a much wider spectrum to be analyzed. These bands are usually shown as a third dimension, giving the name of hypercube to these images \ref{fig:cube}.
 \\
 \\
 \begin{figure}[h!]
@@ -88,7 +87,7 @@ Sin embargo, las cámaras hiperespecrales capturan información en muchos más e
 %url{https://towardsdatascience.com/what-are-hyper-spectral-images-a5de5d9fa91}
 \\
 \\
-Estos espectros o bandas forman en su conjunto una firma hiperespectral para cada material, que al ser comparado con imágenes aéreas permiten reconocer diferentes tipos de vegetación, depósitos minerales o contaminantes sobre la corteza terrestre \ref{fig:cuprite}.
+These spectra or bands form together an hyperspectral signature for each material, which when compared with aerial images allow the recognition of different types of vegetation, mineral deposits or contaminants on the earth's crust \ref{fig:cuprite}.
 \\
 \\
 \begin{figure}[h!]
@@ -100,15 +99,15 @@ Estos espectros o bandas forman en su conjunto una firma hiperespectral para cad
 \clearpage
 
 
-En este tipo de imágenes podemos hablar de dos tipos de resoluciones: espacial y espectral, siendo esta última única en este tipo de cámaras. Espacial se refiere a la cantidad de metros cubiertos por cada pixel, por lo que para una misma cámara podrá cambiar de una imagen a otra. La resolución espectral se refiere a la separación entre diferentes longitudes de onda medidos en un rango determinado, es decir cuantas mas bandas capturadas en un rango menor, mayor será la resolución espectral\cite{amigo_chapter_2020}.
+In this type of images we can talk about two types of resolutions: spatial and spectral, the latter being unique in this type of cameras. Spatial refers to the amount of meters covered by each pixel, so for the same camera you can change from one image to another. The spectral resolution refers to the separation between different wavelengths measured in a given range, that is, the more bands captured in a lower range, the higher the spectral resolution will be \cite{amigo_chapter_2020}.
 \\
 
-Conforme al avance de la tecnología, estas resoluciones siguen aumentando realzando la necesidad de sistemas de procesado acorde.
+As technology advances, these resolutions continue to increase highlighting the need for commensurate processing systems.
 
 \subsection{Anomaly detection}
-En teoría, un material debería tener siempre la misma firma espectral. En la práctica, la firma capturada nunca va a ser la misma que la medida en un laboratorio a causa de diferencias en la iluminación, efectos atmosféricos, ruido etc. resultando en variedad espectral para materiales similares\cite{borsoi_spectral_2020}.
+In theory, a material should always have the same spectral signature. In practice, the captured signature will never be the same as the one measured in a laboratory because of differences in lighting, atmospheric effects, noise, etc. resulting in spectral variation for similar materials \cite{borsoi_spectral_2020}.
 
-Esto ha llevado al desarrollo de algoritmos que en vez de clasificar observaciones según su firma, buscan clasificar las observaciones entre materiales inusuales o anómalos y el fondo. Para ello se asume que el material -el objetivo- es espectralmente diferenciable del fondo. El fondo es derivado globalmente de la imagen asumiendo que sigue una distribución normal.
+This has led to the development of algorithms that instead of classifying observations according to their signature, seek to classify the observations into unusual or anomalous materials and background. This assumes that the material -the target- is spectrally distinguishable from the background. The background is derived globally from the image assuming that it follows a normal distribution.
 
 %\url{http://downloads.hindawi.com/journals/jece/2012/425947.pdf}\\
 %\url{http://downloads.hindawi.com/journals/jece/2012/628479.pdf}\\
@@ -116,40 +115,41 @@ Esto ha llevado al desarrollo de algoritmos que en vez de clasificar observacion
 %\url{http://downloads.hindawi.com/journals/jece/2012/162106.pdf}
 
 \subsubsection{RX algorithm}
-El algoritmo Reed-Xiaoli detector de anomalías es un algoritmo común que sirve de base a muchos otros.%\url{http://downloads.hindawi.com/journals/jece/2012/162106.pdf}\url{http://downloads.hindawi.com/journals/jece/2012/425947.pdf}\\%https://www.researchgate.net/publication/224166337_A_tutorial_overview_of_anomaly_detection_in_hyperspectral_images
+The Reed-Xiaoli anomaly detector algorithm is a common algorithm that serves as the basis for many others.%\url{http://downloads.hindawi.com/journals/jece/2012/162106.pdf}\url{http://downloads.hindawi.com/journals/jece/2012/425947.pdf}\\%https://www.researchgate.net/publication/224166337_A_tutorial_overview_of_anomaly_detection_in_hyperspectral_images
 %\url{http://downloads.hindawi.com/journals/jece/2012/162106.pdf}
 
-El algoritmo esta definido por la siguiente expresión\citep{molero_fast_2011}:
+The algorithm is defined by the following expression \cite{molero_fast_2011}:
 \\
 \[\delta ^{RX}(x) = (x-\mu)^{T}K^{-1}(x-\mu)\]
 
 \paragraph{}
 \phantomsection
 \label{mayor}
-Donde $x$ es un pixel hiperespectral (un vector de tamaño igual al número de bandas), $\mu$ es la media de cada banda y $K$ es la matriz de covarianzas. Es importante decir que los resultados generados por el algoritmo son imágenes en escala de grises. Las anomalías poseen un valor alto, así, la primera anomalía corresponde con el pixel con el valor más alto, y así sucesivamente.
+Where $x$ is a hyperspectral pixel, a vector of size equal to the number of bands, $\mu$ is the mean of each band and $K$ is the covariance matrix. It is important to say that the results generated by the algorithm are grayscale 2D images. The anomalies have a high value, so the first anomaly corresponds to the pixel with the highest value, and so on.
 
 \subsubsection{Other methods}
-Aparte del algoritmo RX, existen otros métodos para la detección de anomalías, aunque un número notable de ellos se basa en RX.
+Apart from the RX algorithm, there are other methods for detecting anomalies, although a notable number of them are based on RX.
 
 \subsubsection{Subspace methods}
-Los métodos subspace son globales y aplican principal component analysis (PCA) o singular value decomposition (SVD) al hipercubo. Las primeras bandas de PCA/SVD son supuestas de ser el fondo y son eliminadas de diferente forma por cada método. No eliminar suficientes bandas implica que las anomalías pueden perderse entre el ruido del fondo y eliminar demasiadas que estas desaparecerían. La determinación del número correcto de bandas a eliminar sigue siendo objeto de estudio. \cite{borghys_hyperspectral_2012}
+Subspace methods are global and apply principal component analysis (PCA) or singular value decomposition (SVD) to the hypercube. The first PCA/SVD bands are supposed to be the background and are removed differently by each method. Not removing enough bands means that the anomalies can be lost in the background noise and removing too many would lead the anomalies to disappear. The determination of the correct number of bands to be removed is still under study \cite{borghys_hyperspectral_2012}.
 
 \paragraph{Subspace RX}
-En este método, el algoritmo RX es aplicado sobre un número limitado de bandas PCA. Las primeras componentes son descartadas.
+In this method, the RX algorithm is applied to a limited number of PCA bands. The first components are discarded.
 
 \paragraph{RX after orthogonal subspace projection}
-En este método, las primeras componentes PCA/SVD definen el subespacio del fondo y los datos son proyectados sobre un espacio ortogonal antes de aplicar RX.
+In this method, the first PCA/SVD components define the subspace of the background and the data is projected onto an orthogonal space before applying XR.
 
 \paragraph{RX after partialling out the clutter subspace}
-En este método, "the effect of the clutter" en un pixel es descartado por componentes al predecir cada uno de sus componentes espectrales como combinación lineal de sus componentes principales de alta varianza. Sobre los resultantes se aplica el algoritmo RX.
+In this method, clutter effect on a pixel is discarded component wise taking each of its spectral components as a linear combination of its high variance principal components. The RX algorithm is applied to the results.
 
-\paragraph{Complimentary subspace detector}
-Este algoritmo no está basado en RX. En CSD, las componentes principales con mayor varianza son usadas para definir el subespacio del fondo y las demás PC para definir el subespacio del objetivo. El pixel es entonces proyectado sobre los dos subespacios y el resultado es la diferencia de estos.
+\paragraph{Complimentary subspace detector}.
+This algorithm is not based on RX. In CSD, the principal components with higher variance are used to define the subspace of the background and the other PCs to define the subspace of the target. The pixel is then projected onto the two subspaces and the result is the difference between them.
 
 \subsubsection{Local methods}
-En los métodos locales el fondo es derivado de los pixeles vecinos o que rodean al pixel a testear (PUT). Se definen dos ventanas, una guard y una exterior, y los vecinos son los pixeles que se encuentran entre estas dos. A veces, por ejemplo en RX local se usa una tercera donde la covarianza del fondo es calculada en una ventana mayor que la media del fondo.
+In the local methods the background is derived from the neighboring pixels or surroundings of the pixel under test (PUT). Two windows are defined, a guard and an exterior, and the neighbors are the pixels that are between these two. Sometimes, for example in local RX, a third one is used where the covariance of the background is calculated in a window larger than the average of the background.
+
 \paragraph{Quasi-local RX}
-Quasi-local RX es un compromiso entre RX global y RX local, donde la matriz de covarianza global es decompuesta usando eigenvector/eigenvalues. Los eigenvectors son manetnidos, pero los eigenvalues reemplazados por la varianza local maxima, resultando en que las puntuaciones del detector serán menores en zonas con alta varianza.
+Quasi-local RX is a compromise between global RX and local RX, where the global covariance matrix is decomposed using eigenvector/eigenvalues. The eigenvectors are maintained, but the eigenvalues are replaced by the maximum local variance, resulting in lower detector scores in areas with high variance.
 
 \begin{figure}[h!]
 \centering
@@ -177,18 +177,19 @@ Quasi-local RX es un compromiso entre RX global y RX local, donde la matriz de c
 \end{figure}
 
 \subsubsection{Segmentation based methods}
-En escenas complejas es difícil asumir que el fondo a a ser definido por una  distribución normal, por lo que se han desarrollado métodos que separan este en diferentes clases.
-\paragraph{Class-Conditional RX}
-En este método la imagen es primeramente segmentada y la matriz de covarianza y media calculada para cada una de estas clases. Los puntos corresponderán a la clase en la que su valor RX sea menor.
+In complex scenes it is difficult to assume that the background will be defined by a normal distribution, so methods have been developed to separate it into different classes.
 
-Existen más métodos dentro de los basados en segmentación, desde los que usan funciones estocásticas como Method Based on Multivariate Normal Mixture Models hasta métodos basados en Self-organizing maps.
+\paragraph{Class-Conditional RX}
+In this method the image is first segmented and the covariance and mean matrix calculated for each of these classes. Each pixel will correspond to the class in which its RX value is lower.
+
+There are more methods within those based on segmentation, from those using stochastic functions such as Method Based on Multivariate Normal Mixture Models to methods based on Self-organizing maps.
 
 
 
 \subsection{Comparing floating and fixed point}
 \label{makereference}
 
-En los sistemas informáticos, existen dos representaciones numéricas para números reales, punto fijo y flotante. Cuentan con diferentes aritméticas, lo que les otorga diferente rango y resolución con el mismo numero de bits. Por lo tanto, hay ciertas aplicaciones o plataformas mas afines a uno de ellos. Por ejemplo, la capacidad de los números de punto flotante de poder contener en la misma cantidad de bits tanto números muy grandes como muy pequeños y de ajustar su resolución acordemente resulta muy atractiva desde el punto de vista del programador pero la simpleza de las operaciones en punto fijo permiten su uso en microcontroladores de pequeño tamaño y el ahorro de recursos en FPGAs.%fuente
+In computer systems, there are two numerical representations for real numbers, fixed and floating point. They have different arithmetic, which gives them different range and resolution with the same number of bits. Therefore, there are certain applications or platforms more akin to one of them. For example, the ability of floating point numbers to contain in the same number of bits both very large and very small numbers and to adjust their resolution accordingly is very attractive from the programmer's point of view but the simplicity of fixed point operations allow their use in small microcontrollers or to save resources in FPGAs.%fuente
 \begin{figure}[h!]
 \centering
 \includegraphics[height=2.5in]{figures/fp_vs_fp.png}
@@ -196,21 +197,21 @@ En los sistemas informáticos, existen dos representaciones numéricas para núm
   \label{fig:fp}
 \end{figure}
 \\
-Debido a la alta complejidad del análisis de imágenes hiperespectrales, las FPGA actuales tienen apenas capacidad para implementar algunos de estos algoritmos. Por lo tanto, uno de los objetivos de este trabajo es realizar dos implementaciones paralelas, una en punto flotante y otra en fijo y comparar sus resultados.
+Due to the high complexity of hyperspectral image analysis, current FPGAs have little capacity to implement some of these algorithms. Therefore, one of the objectives of this work is to perform two parallel implementations, one in floating point and another one in fixed point and compare their results.
 
 \pagebreak
 \section{Project plan}
-Primero se elegirá un algoritmo y un hardware sobre el que implementarlo. Deseablemente, este algoritmo debe ser conocido y encontrarse comúnmente en la literatura.
+First, an algorithm and a hardware platform are chosen. Desirably, this algorithm should be known and commonly found in the literature.
 \\
-Este algoritmo será implementado en software y esta implementación probada con imágenes reales contra software ya existente como ENVI o Spectral Python.
+This algorithm will be implemented in software and this implementation tested with real images against existing software such as ENVI or Spectral Python.
 \\
-Los pasos del algoritmo serán entonces optimizados para una arquitectura hardware y se estudiará la transformación del algoritmo de punto flotante a lógica de enteros o punto fijo.
+The different algorithm stages will then be optimized for a hardware architecture and the transformation of the algorithm from floating point to integer or fixed point logic will be studied.
 \\
-Esta transformación requiere decisiones de diseño que sacrifican precisión en pos de ahorrar recursos hardware, por lo que se tendrá que tener en cuenta el hardware subyacente.
+This transformation requires design decisions that sacrifice precision with the goal of saving hardware resources, so the underlying hardware will have to be taken into account.
 \\
-Posteriormente, se realizará una validación del diseño en hardware.
+Subsequently, a hardware validation of the design will be realized.
 \\
-Por último, se realizará un estudio sobre la precisión de los resultados obtenidos.
+Finally, a study will be carried out on the accuracy of the results obtained.
 \\
 \\
     \begin{figure}[h!]

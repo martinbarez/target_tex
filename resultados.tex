@@ -3,7 +3,7 @@
 %\label{ch:chapter1}
 \label{makereference}
 \section{Reconfigurable platform}
-La arquitectura descrita en la anterior sección ha sido implementada usando el lenguaje VHDL. Para probar su correcto funcionamiento se ha usado el entorno Vivado y la FPGA Virtex 690T. Si bien no es una FPGA con protección frente a radiación, la arquitectura de este algoritmo es escalable de tal manera que su adaptación a otros tamaños de sensor o FPGAs no debería suponer ningún problema.
+The architecture described in the previous section has been implemented using the VHDL language. To test its correct operation, the Vivado environment and the Virtex 690T FPGA have been used. Although it is not a radiation-protected FPGA, the architecture of this algorithm is scalable so that its adaptation to other sensor sizes or FPGAs should not be a problem.
 
 \begin{center}
  \begin{tabular}{|c|c|c|c|c|c|} 
@@ -16,9 +16,9 @@ La arquitectura descrita en la anterior sección ha sido implementada usando el 
 \end{center}
 
 \section{Hyperpectral image datasets}
-Para el trabajo se han empleado dos imágenes hiperespectrales, una tomada por el sensor HYDICE y otra por el sensor AVIRIS. Ambas imágenes son usadas comúnmente como referente en aplicaciones hiperespectrales. 
+Two hyperspectral images have been used for the work, one taken by the HYDICE sensor and the other by the AVIRIS sensor. Both images are commonly used as reference in hyperspectral applications. 
 \\
-En el terreno de la escena capturada por HYDICE fueron colocados 15 paneles de distinto tamaño en una configuración de 3 x 5. En las siguientes imágenes se puede observar la imagen en falso color y la ubicación de los paneles como ha sido detectada por un software comercial.
+In the field of the scene captured by HYDICE, 15 panels of different sizes were placed in a 3 x 5 meter configuration. The following images show the false color image and the location of the panels as detected by commercial software.
 \begin{figure}[!ht]
     \begin{tabular}[b]{c|c}\hline
       Horizontal res & 64 \\ \hline
@@ -35,7 +35,7 @@ En el terreno de la escena capturada por HYDICE fueron colocados 15 paneles de d
   %https://www.indexdatabase.de/db/s-single.php?id=84
 \\
 \\
-La imagen tomada por el sensor AVIRIS fue tomada el 16 de septiembre de 2001, cinco días después de los ataques terroristas que derrumbaron las torres del WTC y sus edificios colindantes. La resolución espacial de esta imagen es muy alta ya que se realizó un vuelo a muy baja altura. Junto a la imagen en falso color se proporciona una imagen con las anomalías detectadas por un programa comercial rodeadas a su vez para indicar su posición.
+The image taken by the AVIRIS sensor was taken on September 16, 2001, five days after the terrorist attacks that brought down the WTC towers and its surrounding buildings. The spatial resolution of this image is very high because a very low altitude flight was performed. Along with the false color image, an image with the anomalies detected by a commercial program surrounded to indicate their position is provided.
 \begin{figure}[!ht]
     \begin{tabular}[b]{c|c}\hline
       Horizontal res & 614 \\ \hline
@@ -54,23 +54,24 @@ La imagen tomada por el sensor AVIRIS fue tomada el 16 de septiembre de 2001, ci
 \\
 \section{Adequacy of approximation}
 \subsection{Floating point}
-Los resultados proporcionados por la versión en punto flotante de este sistema son los mismos que los proporcionados por la versión en software equivalente, por lo que esta se puede dar por válida.
+The results provided by the floating point version of this system are the same as those provided by the equivalent software version, so it can be considered valid.
 
 \subsection{Fixed point}
-La versión en punto fijo del sistema es una aproximación al sistema en punto flotante con la intención de mantener la mayor precisión posible con un uso limitado de recursos.
-Por tanto, los resultados son diferentes y hay que realizar una valoración sobre su precisión. Para ello, se han utilizado 3 métricas.
+The fixed point version of the system is an approach to the floating point system with the intention of maintaining the highest possible accuracy with limited use of resources.
+Therefore, the results are different and an assessment of their accuracy must be made. For this purpose, three metrics have been used.
 \\
 \\
-En la primera y más simple, se ha comprobado que cantidad de anomalías detectadas se pueden encontrar en las primeras x posiciones en ambos resultados, sin importar el orden.
+In the first and simplest, it has been verified that the amount of detected anomalies can be found in the first x positions in both results, regardless of the order.
 \\
 \\
-Ampliando la anterior estrategia, se ha comprobado para los elementos no coincidentes, si se ha detectado algún vecino en el entorno. Un vecino es definido como un pixel adyacente, tanto en linea recta como en diagonal.
+Extending the previous strategy, it has been checked for the non coinciding elements, if any neighbor has been detected in the environment. A neighbor is defined as an adjacent pixel, both in a straight line and in diagonal.
 \\
 \\
-Para terminar se ha vuelto a extender la primera estrategia, esta vez se ha comprobado si para los no coincidentes se ha encontrado una anomalía con una similaridad espectral menor de 5 grados.
+Finally, the first strategy has been extended again, this time it has been checked if for the non coincidences an anomaly with a spectral similarity of less than 5 degrees has been found.
 \\
 %https://www.harrisgeospatial.com/docs/SpectralAngleMapper.html
-El Mapeador de Ángulos Espectrales (SAM) es una clasificación espectral basada en la física que utiliza un ángulo n-D para hacer coincidir los píxeles con los espectros de referencia. El algoritmo determina la similitud espectral entre dos espectros calculando el ángulo entre los espectros y tratándolos como vectores en un espacio con una dimensionalidad igual al número de bandas. Esta técnica, cuando se utiliza en los datos de reflectancia calibrados, es relativamente insensible a los efectos de la iluminación y del albedo
+\paragraph{Spectral similarity}
+The Spectral Angle Mapper (SAM) is a physics-based spectral classification that uses an n-D angle to match pixels with reference spectra. The algorithm determines the spectral similarity between two spectra by calculating the angle between the spectra and treating them as vectors in a space with a dimensionality equal to the number of bands. This technique, when used in calibrated reflectance data, is relatively insensitive to the effects of illumination and albedo.
 \begin{figure}[h!]
 \begin{minipage}[t]{0.5\linewidth}
 \centering
@@ -92,32 +93,32 @@ r = reference pixel
 \caption{Spectral Angle Mapper algorithm.}
 \end{figure}
 
-En los resultados de HYDICE se puede apreciar como si un pixel no es el detectado, tampoco lo es un pixel vecino, pero que todos los resultados concuerdan según su firma espectral. Esto es a causa del gran tamaño de los targets a detectar, donde existen varios pixeles en el mismo target y el orden de detección puede variar. Sin embargo, al ser todos los targets similares espectralemente, la firma siempre concuerda. La imagen resulta por lo tanto bastante fácil de analizar y se han logrado buenos resultados.
+In the results of HYDICE it can be seen that if a pixel is not the one detected, neither is it a neighboring pixel, but that all the results correspond according to their spectral signature. This is because of the large size of the targets to detect, where there are several pixels in the same target and the order of detection may vary. However, as the pixels in each target are spectrally similar, the signature always matches. The image is therefore quite easy to analyze and good results have been achieved.
 \begin{figure}[!ht]
 	\includegraphics[height=2.0in]{figures/hydice.png}
 	\includegraphics[height=2.0in]{figures/hydice_res.png}
 \end{figure}
 
-La imagen del WTC es sim embargo más compleja, y se puede observar que la detección de pixeles exactos y vecinos falla. Sin embargo, las firmas espectrales concuerdan en su mayor parte, sobretodo teniendo en cuenta el número de hot spots reales encontrados en la imagen. Por lo tanto os resultados se pueden tomar también como exitosos.
+The WTC image is more complex and it can be seen that the detection of exact pixels and neighbors quickly falls. However, the spectral signatures match for the most part, especially considering the number of real hot spots found in the image. Therefore the results can also be taken as successful.
 \begin{figure}[!ht]
 	\includegraphics[height=2.0in]{figures/wtc.png}
 	\includegraphics[height=2.0in]{figures/wtc_res.png}
 \end{figure}
 
-Cabe destacar que los valores de desplazamiento dentro de los cálculos han sido adaptados para cada imagen con la intención de detectar el mayor número de anomalías posibles, por lo que los resultados obtenidos en un sistema real serán ligeramente menores. Aún así, los valores entre las dos imágenes son bastante similares, pese a la gran diferencia entre los datos que representan.
+It should be noted that the shift values within the calculations have been adapted for each image with the intention of detecting the greatest number of anomalies possible, so that the results obtained in a real system will be slightly lower. Even so, the values between the two images are quite similar, despite the great difference between the data they represent.
 \\
-Además, puesto que se trata de un sistema reconfigurable, estos valores pueden ser modificados después de la puesta en marcha del sistema, tanto para aceptar un mayor rango de imágenes, como para obtener resultados más exactos.
+In addition, since it is a reconfigurable system, these values can be modified after the system is put into operation, both to accept a wider range of images, and to obtain more accurate results.
 
 nota: tengo que incluir una leyenda
 nota: tengo que pintar bien las imágenes para averigüar que estoy analizando realmente y poder hacer una mejor valoración de los resultados
 
 \section{Computational efficiency}
-A la hora de evaluar el rendimiento hay que evaluar tanto los recursos usados como el tiempo de procesamiento. Estos datos se dan tanto en los obtenidos para los dos sensores como en función de sus características, más específicamente número de bandas y de pixeles.
+When evaluating performance, both the resources used and the processing time must be assessed. These data are given both in those obtained for the two sensors and according to their characteristics, more specifically number of bands and pixels.
 \\
-Cabe destacar que los datos de rendimiento se han obtenido ignorando la entrada y salida de los datos, que es frecuentemente el cuello de botella en este tipo de sistemas.
+It should be noted that performance data has been obtained by ignoring the input and output of data, which is often the bottleneck in this type of system.
 \\
 
-También se ofrece una comparación del gasto de recursos por módulo, que se encuentra estrechamente relacionado con su complejidad en tiempo
+A comparison of resource expenditure per module, which is closely related to its complexity in time, is also provided.
 
 \begin{center}
  \begin{tabular}{|c|c|c|c|c|} 
@@ -152,7 +153,7 @@ También se ofrece una comparación del gasto de recursos por módulo, que se en
 \end{center}
 
 Nota: aquí me falta alguna cosilla.
-Finalmente también se proporciona el gasto total de recursos proporcionado por Vivado y las especificaciones de tiempo y frecuencias
+Finally, the total resource utilization and the time and frequency specifications provided by Vivado are also stated:
 \begin{center}
  \begin{tabular}{|c|c|c|c|c|} 
  \hline

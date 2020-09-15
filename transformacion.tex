@@ -1,20 +1,21 @@
 \cleardoublepage
 %https://www3.ntu.edu.sg/home/ehchua/programming/java/datarepresentation.html
 \chapter{Software Model}
-Para este trabajo se ha elegido el algoritmo RX por ser el benchmark de este tipo de algoritmos \cite{borghys_hyperspectral_2012}, \cite{rosario_semiparametric_2012}, \cite{matteoli_tutorial_2010} y existir muchos algoritmos que usan el RX de alguna manera.
+The RX algorithm has been chosen for this work because it is the benchmark for this kind of algorithms \cite{borghys_hyperspectral_2012}, \cite{rosario_semiparametric_2012}, \cite{matteoli_tutorial_2010} and many existing algorithms basing on RX in some manner.
 \\
-Con el objetivo de familiarizarse con el algoritmo y crear una plataforma donde poder realizar pruebas con facilidad, se ha realizado una implementación en software como primer paso.
+In order to become familiar with the algorithm and create a platform where tests can be easily performed, a software implementation has been made as a first step.
 \\
-El primer paso es dividir el algoritmo en operaciones más simples:
+The first step is to divide the algorithm into simpler operations:
 \begin{itemize}
-\item Calcular la media, la desviación y la matriz de covarianzas K de la imagen
-\item Calcular $K^{-1}$ es decir, la inversa de la matriz de covarianzas
-\item Calcular $\delta ^{RX}$ para cada pixel de la imagen
-\item Ordenar los resultados
+\item Calculate the mean, deviation and K covariance matrix of the image
+\item Calculate $K^{-1}$ that is, the inverse of the covariance matrix
+\item Calculate $\delta ^{RX}$ for each pixel in the image
+\item Sort the results
 \end{itemize}
 \pagebreak
 \subsection{Mean, deviation and covariancce matrix}
-Uno de los cuellos de botella en este tipo de sistemas basados en FPGAs es la entrada y salida de datos\cite{tang_multi-fpga_2014}. Puesto que los cálculos de la media, desviación y matriz de covarianzas necesitan la matriz original (un cubo) para ello, se ha decidido calcular estas en una CPU y transmitir los resultados a la FPGA. Además, las operaciones son relativamente simples para una CPU. A continuación se presenta el pseudocódigo de las 3.
+One of the bottlenecks in this type of FPGA-based systems is the input and output of data \cite{tang_multi-fpga_2014}. Since the calculations of mean, variance and covariance matrix need the original matrix -a cube- for this, it has been decided to calculate these in a CPU and transmit the results to the FPGA. In addition, the operations are relatively simple for a CPU. Next, the pseudocode of the three is presented.
+\\
 \algnewcommand{\LineComment}[1]{\State \(\triangleright\) #1}
 \begin{algorithm}
   \caption{Pseudocode for the mean, deviation and covariance matrix}
@@ -52,27 +53,26 @@ Uno de los cuellos de botella en este tipo de sistemas basados en FPGAs es la en
   \end{algorithmic}
 \end{algorithm}
 
-La covarianza, una matriz de tamaño $bandas^2$ es entonces transmitida a la FPGA para calcular su inversa.
+The covariance, a $band^2$ matrix is then transmitted to the FPGA to calculate its inverse.
 \clearpage
 
 \subsection{Inverse}
 \subsubsection{Choosing the algorithm}
-Antes de empezar la implementación se han estudiado varios algoritmos para realizar la inversa.
+Before starting the implementation, several algorithms to perform the inverse have been studied.
 \paragraph{QR Factorization\citep{alberto_oliveira_de_souza_junior_exploration_2020}:}
-La factorización QR descompone la matriz $A$ en el producto de dos matrices $A = QR$, siendo $Q$ una matriz ortogonal y $R$ una matriz triangular superior. Con esta matriz triangular resulta sencillo calcular la inversa. Sin embargo, aunque la factorización QR puede ser beneficiosa mientras que se cuente con un módulo de multiplicación matricial potente o varios módulos que puedan ser ejecutados de forma simultánea, como puede ser en una GPU, no aprovecha las ventajas proporcionadas por nuestro sistema como pueden ser un tamaño de matrices determinado.
+QR factorization breaks down the $A$ matrix into the product of two matrices $A = QR$, with $Q$ being an orthogonal matrix and $R$ a superior triangular matrix. With this triangular matrix it becomes easy to calculate the inverse. However, although QR factorization can be efficiently performed on a powerful matrix multiplication module or several modules that can be executed simultaneously, such as in a GPU, it does not take advantage of the capabilities provided by our system such as arbitrary width arithmetic units.
 \paragraph{Gauss Jordan elimination method\cite{gonzalez_fpga_2016}:}
-El método de Gauss Jordan dicta que si tenemos una matriz $A$ que puede ser transformada en la matriz identidad a través de operaciones elementales, estas mismas operaciones tranforman la matriz identidad en $A^{-1}$. Puesto que es posible ejecutar estas operaciones elementales en una fila entera y las operaciones entre filas son independientes, este método es fácilmente paralelizable.
-Por tanto, este fue el método elegido.
+The Gauss Jordan method dictates that if we have a $A$ matrix that can be transformed into the identity matrix through elementary operations, these same operations transform the identity matrix into $A^{-1}$. Since it is possible to execute these elementary operations in an entire row at once and the operations between rows are independent, this method is easily parallelizable.
+Therefore, this was the chosen method.
 \\
 \\
-A rasgos generales, la ejecución del algoritmo transcurre tal que:
+Generally speaking, the execution of the algorithm takes place in such a way that:
 \begin{enumerate}
-\item Se genera una matriz identidad
-\item Se realizan las mismas operaciones sobre ambas matrices hasta transformar la matriz $A$ en la matriz identidad
-\item El resultado se encuentra en la matriz generada en el primer paso
+\item An identity matrix is generated
+\item The same operations are performed on both matrices until the $A$ matrix is transformed into the identity matrix
+\item The result is in the matrix generated in the first step
 \end{enumerate}
-
-Como se puede observar en el siguiente pseudocódigo, estas operaciones elementales se realizan en 3 pasos.
+\noindent As seen in the following pseudocode, these elementary operations are performed in 3 steps:
 \\
 \\
 \begin{algorithm}
@@ -120,18 +120,14 @@ Como se puede observar en el siguiente pseudocódigo, estas operaciones elementa
   \end{algorithmic}
 \end{algorithm}
 
-También es posible calcular la inversa directamente para cada fila, realizando los 3 pasos seguidos, pero esta forma limita la paralelización entre diferentes filas.
+It is also possible to calculate the inverse directly for each row, performing the three steps consecutievly in a row, but this way limits the parallelization between different rows.
 
 \clearpage
 
-
-
-
-
 \subsection{Matrix multiplication}
-Con la inversa de la matriz de convarianzas calculada en la FPGA se puede continuar calculando el verdadero algoritmo RX, donde un pixel hiperespectral es multiplicado con esta. Para este cálculo se requerirá que la CPU transmita la imagen original, la imagen original junto a la media, o la desviación ya calculada.
+With the inverse of the convariance matrix calculated in the FPGA, the real RX algorithm can continue to be performed, where a hyperspectral pixel is multiplied with this inverse. This calculation will require the CPU to transmit the original image, the original image next to the average, or the deviation already calculated to the FPGA.
 \\
-\noindent El algoritmo RX dicta que:
+\noindent The RX algorithm dictates that:
 \[ rx(x) = (x-\mu)^{T} K^{-1}_{N \times N} (x-\mu) \]
 
 
@@ -139,7 +135,7 @@ Con la inversa de la matriz de convarianzas calculada en la FPGA se puede contin
 \indent \((x-\mu)\) \ \	being the deviation of a pixel a dimension of \(N \times 1\) and \\			
 \indent \((x-\mu)^{T}\) \ it's transpose, with a dimension of \(1 \times N\).\\
 
-In this step, the inverse matrix gets effectively multiplied by a unique pixel across all bands. Through row reduction, a single value for this pixel is recovered which can then be mapped to a 2d image.\\
+\noindent In this step, the inverse matrix gets effectively multiplied by a unique pixel across all bands. Through row reduction, a single value for this pixel is recovered which can then be mapped to a 2d image.\\
 
 Since the operands are heterogeneous, use can be made of the associative law on matrix products that dictates that:
 	\[A * (B * C) = (A * B) * C\]
@@ -149,16 +145,16 @@ Since the operands are heterogeneous, use can be made of the associative law on 
 \paragraph{}
 \phantomsection
 \label{alternativa}
-En el apartado de implementación se hará un estudio sobre que alternativa usar, ya que esta depende fuertemente de la arquitectura hardware.
+In the implementation sectiona study on what alternative to use will be carried out, as this depends heavily on the hardware architecture.
 
 \section{Adapting the arithmetic}
-Como se ha mostrado antes en \autoref{fig:fp}, las operaciones aritméticas en punto flotante resultan muy ineficientes comparadas con operaciones en punto fijo. En el siguiente capitulo se va a definir la estrategia y mostrar los pasos seguidos para realizar está transición.
+As shown before in \autoref{fig:fp}, floating point arithmetic operations are very inefficient compared to fixed point operations. In the next chapter a transformation strategy will be defined and the steps followed to make this transition will be shown.
 \\
 \\
-Aprovechando que el algoritmo RX solo necesita valores relativos y no exactos, es decir, el valor más alto encontrado en los resultados va a ser el más anómalo(véase \ref{mayor}) independientemente de si supera cierto umbral o no, se puede simplificar la representación en punto fijo obviando la parte fraccionaría y manteniendo solo la parte entera.
+Taking advantage that the RX algorithm only needs relative and not exact values, ie, the highest value found in the results will be the most anomalous -see \ref{mayor}- regardless of whether it exceeds a certain threshold or not, the fixed-point representation may be simplified by ignoring the fractional part and keeping only the integer.
 
 \subsection{DSP Blocks}
-Los bloques DSP son circuitos prefabricados que se encuentran junto a la lógica de la FPGA e implementan operaciones aritméticas. Estos bloques permiten realizar operaciones de forma más eficiente y operar a frecuencias más altas que lógica equivalente en fabric, además de no ocupar espacio en esta. Sin embargo, al ser bloques prefabricados, no ofrecen la misma flexibilidad que el resto de lógica de la FPGA. Esto implica que el tamaño de los operandos y el coste de recursos de la operación no estarán siempre proporcionalmente relacionados. Por ello, se han probado diferentes anchos y se ha anotado su uso de recursos. Los resultados de estas pruebas para la multiplicación se encuentran en la siguiente tabla:
+The DSP blocks are prefabricated circuits found next to the FPGA logic and implement arithmetic operations. These blocks allow to perform operations more efficiently and operate at higher frequencies than equivalent logic in the fabric, besides not occupying space in it. However, as they are prefabricated blocks, they do not offer the same flexibility as the rest of the FPGA logic. This implies that the size of the operands and the cost of operation resources will not always be proportionally related. Therefore, different widths have been tested and their resource usage has been noted. The results of these tests for multiplication are in the following table:
 
 \begin{center}
  \begin{tabular}{|c c |c|} 
@@ -179,18 +175,18 @@ Los bloques DSP son circuitos prefabricados que se encuentran junto a la lógica
  \hline
 \end{tabular}
 \end{center}
-Dependiendo del ancho de los operandos, la operación usará una cantidad diferente de recursos (datos obtenidos para la multiplicación con signo en Vivado 2019.2 en las placas Xilinx Series 7)
+Depending on the width of the operands, the operation will use a different amount of resources (data obtained for signed multiplication in Vivado 2019.2 on Xilinx Series 7 plates)
 \\
 \\
-Para operaciones de suma resta hasta 48bits, solo se usa un DSP, por lo que no se espera que requieran más que un bloque.
+For subtraction operations up to 48bits, only one DSP is used, so they are not expected to require more than one block.
 \\
-Las divisiones no pueden ser implementadas por este tipo de bloques, por lo que usarán lógica estándar y podrán ser usadas con un ancho arbitrario.
-\\
-\\
-Con esto se tienen ya datos de todas las operaciones que se van a realizar en la FPGA.
+The divisions cannot be implemented by this type of blocks, so they will use standard logic and can be used with an arbitrary width.
 \\
 \\
-Para determinar el ancho de las multiplicaciones se usó un modelo hardware implementado en software. Este modelo trunca tanto los datos de entrada como los de salida de cada operación. Los resultados finales corresponden entonces al ratio de anomalías que se encuentran entre las x primeras, hasta 30.
+With this data for all the operations that are going to be carried out in the FPGA is recorded.
+\\
+\\
+A hardware model implemented in software was used to determine the width of the multiplications. This model truncates both the input and output operands of each operation. The final results correspond then to the ratio of anomalies that are between the first x, up to 30.
 \begin{figure}[h!]
 \centering
 \includegraphics[height=2.5in]{figures/width.png}
@@ -202,11 +198,11 @@ Como se puede observar en \autoref{fig:width}, ESTO TENGO QUE REPETIRLO.
 \\
 
 \subsection{Improving accuracy}
-También es necesario crear reglas para desplazar los resultados para mantener la máxima precisión posible sin producir desbordamiento.
+It is also necessary to create rules to shift the results to maintain the highest possible accuracy without producing overflow.
 \\
-Por ejemplo, las divisiones realizadas en el cálculo de la inversa producen números muy pequeños donde la parte fraccionaría resulta relevante para el resultado final. Puesto que esta parte se pierde en la aritmética entera, es necesario multiplicar o desplazar los operandos para producir resultados donde el punto se encuentre desplazado a la izquierda. Estás multiplicaciones se realizarán siempre en potencias de 2, también negativas en el caso de que se requiera decrementar el ancho de bits, ya que resultan triviales de implementar en una FPGA y no gastan recursos.
+For example, the divisions made in the inverse calculation produce very small numbers where the fractional part is relevant to the final result. Since this part is lost in integer arithmetic, it is necessary to multiply the operands to produce results where the point is shifted to the left. These multiplications will always be done in powers of 2, negative if required to decrease the bit width, as they are trivial to implement in an FPGA and do not require resources.
 \\
 \\
-Estas pruebas se realizaron también en el modelo hardware. Los resultados indicaron que la mayor pérdida de precisión ocurría en el cálculo de la inversa. Por ello se revisó el modelo y se incluyeron desplazamientos en la captura inicial de matrices (en la inicialización en el caso de $A^{-1}$, y en la transferencia a la FPGA en el caso de $A$). También se incluyeron diferentes desplazamientos para cada fase de la inversión.
+The results indicated that the greatest loss of accuracy occurred in the inverse calculation. Therefore, the model was revised and shifts were included in the initial matrix capture, in the initialization in the case of $A^{-1}$ and in the transfer to the FPGA in the case of $A$. Different shifts were also included for each phase of the inverse.
 
 
