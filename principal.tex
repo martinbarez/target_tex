@@ -72,11 +72,7 @@
 \usepackage{algorithm}
 \usepackage{algorithmicx}
 \usepackage[noend]{algpseudocode}
-
-\usepackage{amsxtra}
-\usepackage{amssymb}
-\usepackage{amsthm}
-\usepackage{latexsym}
+\usepackage{mathtools}
 
 % +--------------------------------------------------------------------+
 % | The color package allows one to select colors for hyperlinking     |
@@ -106,7 +102,7 @@
 % +--------------------------------------------------------------------+
 
 \usepackage[sort&compress]{natbib}
-\bibpunct{}{}{,}{s}{}{}
+\bibpunct{[}{]}{,}{n}{}{}
 \usepackage{hypernat}
 
 % +--------------------------------------------------------------------+
@@ -140,6 +136,87 @@
 \oddsidemargin  =  0.02in
 
 % +--------------------------------------------------------------------+
+% | Stuff for the gantt diagramm.                                      |
+% +--------------------------------------------------------------------+
+
+\usepackage{amsxtra}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{latexsym}
+
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{graphicx}
+% GanttHeader setups some parameters for the rest of the diagram
+% #1 Width of the diagram
+% #2 Width of the space reserved for task numbers
+% #3 Width of the space reserved for task names
+% #4 Number of months in the diagram
+% In addition to these parameters, the layout of the diagram is influenced
+% by keys defined below, such as y, which changes the vertical scale
+\def\GanttHeader#1#2#3#4{%
+ \pgfmathparse{(#1-#2-#3)/#4}
+ \tikzset{y=7mm, task number/.style={left, font=\bfseries},
+     task description/.style={text width=#3,  right, draw=none,
+           font=\sffamily, xshift=#2,
+           minimum height=2em},
+     gantt bar/.style={draw=black, fill=blue!30},
+     help lines/.style={draw=black!30, dashed},
+     x=\pgfmathresult pt
+     }
+  \def\totalmonths{#4}
+  \node (Header) [task description] at (0,0) {\textbf{\large Tasks}};
+  \begin{scope}[shift=($(Header.south east)$)]
+    \foreach \x in {1,...,#4}
+      \node[above] at (\x,0) {\footnotesize\x};
+ \end{scope}
+}
+
+% This macro adds a task to the diagram
+% #1 Number of the task
+% #2 Task's name
+% #3 Starting date of the task (month's number, can be non-integer)
+% #4 Task's duration in months (can be non-integer)
+\def\Task#1#2#3#4{%
+\node[task number] at ($(Header.west) + (0, -#1)$) {#1};
+\node[task description] at (0,-#1) {#2};
+\begin{scope}[shift=($(Header.south east)$)]
+  \draw (0,-#1) rectangle +(\totalmonths, 1);
+  \foreach \x in {1,...,\totalmonths}
+    \draw[help lines] (\x,-#1) -- +(0,1);
+  \filldraw[gantt bar] ($(#3, -#1+0.2)$) rectangle +(#4,0.6);
+  \coordinate (#1a) at (#3,-#1+0.5);
+  \coordinate (#1b) at (#3+#4,-#1+0.5);
+\end{scope}
+}
+
+\newcommand\arrowwhereboxesoverlap[3][]{%
+  % #1: arrow style
+  % #2: number of first task
+  % #3: number of second task
+  \path (#2b) ++(0.2,-0.5) coordinate (tmpa);
+  \path (#3a) ++(-0.2,0) coordinate (tmpb);
+  \draw [#1] (#2b) -| (tmpa) -| (tmpb) -- (#3a);
+  }
+
+
+% +--------------------------------------------------------------------+
+% | Stuff for flowcharts.                                              |
+% +--------------------------------------------------------------------+
+\usetikzlibrary{shapes.geometric, arrows}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=4cm, draw=black]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\usepackage{listings}
+
+% +--------------------------------------------------------------------+
 % | The document finally begins here.                                  |
 % +--------------------------------------------------------------------+
 
@@ -160,8 +237,8 @@
 % | Autorizacion Page -- Required for both Doctoral and Masters Students
 % +--------------------------------------------------------------------+
 
-\input{autorizacion.tex}
-   \pdfbookmark[0]{Autorización}{PDFAutorizacionPage}
+%\input{autorizacion.tex}
+%   \pdfbookmark[0]{Autorización}{PDFAutorizacionPage}
 
 
    
@@ -281,32 +358,8 @@
 % | References                                                              |
 % +-------------------------------------------------------------------------+
 
-% +-------------------------------------------------------------------------+
-% | In order for WinEDT to index references correctly, it has to know where |
-% | the file resides.  The following command is prefaced by %, and will be  |
-% | ignored completely by LaTeX.  However, WinEDT will use this line to     |
-% | access the external .bib bibliography file.  Also note that WinEDT can  |
-% | read file path names with either "\" or "/" - LaTeX, however, doesn't   |
-% | like "\", so it's easier to store a path name in the "Unix" style.      |
-% +-------------------------------------------------------------------------+
-
-%Included for Gather Purpose only.  Do NOT uncomment:
-%input "references.bib"
-
-% +--------------------------------------------------------------------+
-% | This template uses the BibTeX program to format references.  The
-% | 3 lines below create a separate Bibliography section and add
-% | an entry for "Bibliography" to the Table of Contents.  The actual
-% | data for your references (author, title, journal, date, etc.) are
-% | entered in the references.bib file.  See that file for information
-% | on how to enter references.
-% +--------------------------------------------------------------------+
-
-\iffalse
-\bibdata{references}
 \bibliography{references}
-\addcontentsline{toc}{chapter}{Bibliography}
-\fi
+%\bibliographystyle{ieeetr}
 
 % +--------------------------------------------------------------------+
 % | Finally, we generate the appendix.  To add or delete appendices,

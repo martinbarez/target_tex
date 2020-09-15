@@ -1,98 +1,273 @@
-%% This BibTeX bibliography file was created using BibDesk.
-%% http://bibdesk.sourceforge.net/
 
+@article{lopez_promise_2013,
+	title = {The {Promise} of {Reconfigurable} {Computing} for {Hyperspectral} {Imaging} {Onboard} {Systems}: {A} {Review} and {Trends}},
+	volume = {101},
+	issn = {1558-2256},
+	shorttitle = {The {Promise} of {Reconfigurable} {Computing} for {Hyperspectral} {Imaging} {Onboard} {Systems}},
+	doi = {10.1109/JPROC.2012.2231391},
+	abstract = {Hyperspectral imaging is an important technique in remote sensing which is characterized by high spectral resolutions. With the advent of new hyperspectral remote sensing missions and their increased temporal resolutions, the availability and dimensionality of hyperspectral data is continuously increasing. This demands fast processing solutions that can be used to compress and/or interpret hyperspectral data onboard spacecraft imaging platforms in order to reduce downlink connection requirements and perform a more efficient exploitation of hyperspectral data sets in various applications. Over the last few years, reconfigurable hardware solutions such as field-programmable gate arrays (FPGAs) have been consolidated as the standard choice for onboard remote sensing processing due to their smaller size, weight, and power consumption when compared with other high-performance computing systems, as well as to the availability of more FPGAs with increased tolerance to ionizing radiation in space. Although there have been many literature sources on the use of FPGAs in remote sensing in general and in hyperspectral remote sensing in particular, there is no specific reference discussing the state-of-the-art and future trends of applying this flexible and dynamic technology to such missions. In this work, a necessary first step in this direction is taken by providing an extensive review and discussion of the (current and future) capabilities of reconfigurable hardware and FPGAs in the context of hyperspectral remote sensing missions. The review covers both technological aspects of FPGA hardware and implementation issues, providing two specific case studies in which FPGAs are successfully used to improve the compression and interpretation (through spectral unmixing concepts) of remotely sensed hyperspectral data. Based on the two considered case studies, we also highlight the major challenges to be addressed in the near future in this emerging and fast growing research area.},
+	number = {3},
+	journal = {Proceedings of the IEEE},
+	author = {Lopez, Sebastian and Vladimirova, Tanya and Gonzalez, Carlos and Resano, Javier and Mozos, Daniel and Plaza, Antonio},
+	month = mar,
+	year = {2013},
+	keywords = {field programmable gate arrays, geophysical equipment, geophysical image processing, geophysical techniques, hyperspectral imaging, remote sensing, reconfigurable computing, hyperspectral imaging systems, fast processing solutions, hyperspectral data interpretation, spacecraft imaging platforms, hyperspectral remote sensing missions, field-programmable gate arrays, remote sensing processing, ionizing radiation, FPGA hardware, remotely sensed hyperspectral data, Field programmable gate arrays, Hyperspectral imaging, Image coding, Redundancy, Remote sensing, Spectral analysis, Reconfigurable architectures, Field-programmable gate arrays (FPGAs), hyperspectral data compression, hyperspectral remote sensing, reconfigurable hardware, spectral unmixing},
+	pages = {698--722}
+}
 
-%% Created for Nacho at 2011-04-01 11:38:44 +0200 
+@article{gonzalez_fpga_2016,
+	title = {{FPGA} {Implementation} of an {Algorithm} for {Automatically} {Detecting} {Targets} in {Remotely} {Sensed} {Hyperspectral} {Images}},
+	volume = {9},
+	issn = {2151-1535},
+	doi = {10.1109/JSTARS.2015.2504427},
+	abstract = {Timely detection of targets continues to be a relevant challenge for hyperspectral remote sensing capability. The automatic target-generation process using an orthogonal projection operator (ATGP-OSP) has been widely used for this purpose. Hyperspectral target-detection applications require timely responses for swift decisions, which depend upon (near) real-time performance of algorithm analysis. Reconfigurable field-programmable gate arrays (FPGAs) are promising platforms that allow hardware/software codesign and the potential to provide powerful onboard computing capabilities and flexibility at the same time. In this paper, we present an FPGA implementation for the ATGP-OSP algorithm. Our system includes a direct memory access module and implements a prefetching technique to hide the latency of the input/output communications. The proposed method has been implemented on a Virtex-7 XC7VX690T FPGA and tested using real hyperspectral data collected by NASA's Airborne Visible Infra-Red Imaging Spectrometer (AVIRIS) over the Cuprite mining district in Nevada and the World Trade Center in New York. Experimental results demonstrate that our hardware version of the ATGP-OSP algorithm can significantly outperform a software version, which makes our reconfigurable system appealing for onboard hyperspectral data processing.},
+	number = {9},
+	journal = {IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing},
+	author = {González, Carlos and Bernabé, Sergio and Mozos, Daniel and Plaza, Antonio},
+	month = sep,
+	year = {2016},
+	keywords = {field programmable gate arrays, geophysics computing, hyperspectral imaging, object detection, remote sensing, remotely sensed hyperspectral images, hyperspectral remote sensing capability, automatic target-generation process, orthogonal projection operator, hyperspectral target-detection applications, algorithm analysis, reconfigurable field-programmable gate arrays, hardware-software codesign, ATGP-OSP algorithm, input-output communications, Virtex-7 XC7VX690T FPGA, real hyperspectral data, NASA AVIRIS, Airborne Visible Infra-Red Imaging Spectrometer, Cuprite mining district, Nevada, World Trade Center, New York, Hyperspectral imaging, Field programmable gate arrays, Hardware, Algorithm design and analysis, Earth, Automatic target-generation process (ATGP), field-programmable gate arrays (FPGAs), hyperspectral imaging, reconfigurable hardware},
+	pages = {4334--4343}
+}
 
+@misc{colome_garcia_implementacion_2013,
+	type = {info:eu-repo/semantics/coursework},
+	title = {Implementación del algoritmo {RX} para la detección de anomalias en imágenes hiperespectrales de la superficie terrestre mediante hardware reconfigurable},
+	copyright = {info:eu-repo/semantics/openAccess},
+	url = {https://eprints.ucm.es/22557/},
+	abstract = {En los últimos años, el análisis de imágenes hiperespectrales en observación remota, se ha convertido en un campo de investigación muy activo. Actualmente, debido a la resolución espacial disponible en los sensores presentes en plataformas aéreas o satelitales y a la manera en que aparecen los distintos materiales en la naturaleza, en una imagen hiperespectral podemos encontrar dos tipos de píxeles:puros y mezclas. La diferencia entre ellos es que su firma espectral se corresponde con un único material (puro) o es la combinación de varios de ellos (mezcla).Para realizar el análisis de la composición de cada uno de los píxeles de la imagen hiperespectral se utiliza frecuentemente la técnica de desmezclado espectral. En determinadas situaciones no nos interesa realizar un análisis completo de la imagen, generalmente por el excesivo tiempo de ejecución que ello conllevaría, y es suficiente aplicar técnicas de análisis consistentes en la detección de anomalías. Para realizar dicha detección, existe un enfoque desarrollado por Reed y Yu, el cual es conocido comúnmente como algoritmo RX. Es en esta última técnica en la que se basa este trabajo. En este proyecto fin de carrera se ha diseñado e implementado el algoritmo RX completo a excepción de la obtención de la matriz de covarianza, la cual ya se supondrá calculada. Para la especificación de dicha implementación se ha empleado el lenguaje de descripción hardware VHDL y se ha orientado a su uso en plataformas de hardware reconfigurable del tipo Field Programmable Gate Array (FPGA).
+[ABSTRACT]
+In the latest years, remotely sensed hyperspectral imaging has become a very active research field. Nowadays, due to the available spatial resolution of the sensors in remote sensing of the Earth and the way the different materials appear in nature, in a hyperspectral image can be found two different types of pixels: pures and mixtures.
+The difference between them is that its spectral sign corresponds to a unique material (pure ones) or is the blend of some of them (mixture ones). To perform the analysis of each pixel’s composition of the hyperspectral image it is frequently used the technique of spectral unmixing. In certain situations, it is not of interest to perform a whole analysis of the image, usually due to the excessive runtime that will take, and is enough with only applying techniques of anomaly detection. A well-known approach for anomaly detection was developed by Reed and Yu, and is referred to as the RX algorithm. It is in this technique in what it is based this work. In this project it has been designed and implemented the whole RX algorithm but the covariance matrix, which will be assumed as given. The design proposed has been developed in reconfigurable platforms like Field Programmable Gate Arrays (FPGAs) using the VHDL language for its specification.},
+	language = {es},
+	urldate = {2020-09-05},
+	author = {Colomé García, Carlos and Pericacho Sánchez, Gonzalo and Colomé García, Carlos and Pericacho Sánchez, Gonzalo},
+	collaborator = {Mozos Muñoz, Daniel and González Calvo, Carlos and Mozos Muñoz, Daniel and González Calvo, Carlos},
+	year = {2013}
+}
 
-%% Saved with string encoding Unicode (UTF-8) 
+@inproceedings{theiler_onboard_2018,
+	address = {Orlando, United States},
+	title = {Onboard {CubeSat} data processing for hyperspectral detection of chemical plumes},
+	isbn = {9781510617995 9781510618008},
+	url = {https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10644/2305278/Onboard-CubeSat-data-processing-for-hyperspectral-detection-of-chemical-plumes/10.1117/12.2305278.full},
+	doi = {10.1117/12.2305278},
+	urldate = {2020-09-05},
+	booktitle = {Algorithms and {Technologies} for {Multispectral}, {Hyperspectral}, and {Ultraspectral} {Imagery} {XXIV}},
+	publisher = {SPIE},
+	author = {Theiler, James and Foy, Bernard and Safi, Claira and Love, Steven P.},
+	editor = {Messinger, David W. and Velez-Reyes, Miguel},
+	month = may,
+	year = {2018},
+	pages = {5}
+}
 
+@misc{noauthor_aviris_nodate,
+	title = {{AVIRIS} scene flown over {Cuprite}, {Nevada}},
+	url = {https://www.usgs.gov/media/images/aviris-scene-flown-over-cuprite-nevada},
+	urldate = {2020-09-05}
+}
 
-@string{arpc = {Annu. Rev. Phys. Chem.}}
+@article{qin_performance_2018,
+	title = {Performance {Analysis} of {Nanoelectromechanical} {Relay}-{Based} {Field}-{Programmable} {Gate} {Arrays}},
+	volume = {6},
+	issn = {2169-3536},
+	doi = {10.1109/ACCESS.2018.2816781},
+	abstract = {The energy consumption of field-programmable gate arrays (FPGA) is dominated by leakage currents and dynamic energy associated with programmable interconnect. An FPGA built entirely from nanoelectromechanical (NEM) relays can effectively eliminate leakage energy losses, reduce the interconnect dynamic energy, operate at temperatures {\textgreater}225 °C and tolerate radiation doses in excess of 100 Mrad, while hybrid FPGAs comprising both complementary metal-oxide-semiconductor (CMOS) transistors and NEM relays (NEM-CMOS) have the potential to realize improvements in performance and energy efficiency. Large-scale integration of NEM relays, however, poses a significant engineering challenge due to the presence of moving parts. We discuss the design of FPGAs utilizing NEM relays based on a heterogeneous 3-D integration scheme, and carry out a scaling study to quantify key metrics related to performance and energy efficiency in both NEM-only and NEM-CMOS FPGAs. We show how the integration scheme has a profound effect on these metrics by changing the length of global wires. The scaling regime beyond which net performance and energy benefits is seen in NEM-CMOS over a baseline 90 nm CMOS technology is defined by an effective relay beam length of 0.5 \${\textbackslash}mu {\textbackslash}textm\$ , on-resistance of 200 \${\textbackslash}textkØmega\$ , and a via pitch of 0.4 \${\textbackslash}mu {\textbackslash}textm\$ , all achievable with existing process technology. For ultra-low energy applications that are not performance critical, NEM-only FPGAs can provide close to \$15{\textbackslash}times\$ improvement in energy efficiency.},
+	journal = {IEEE Access},
+	author = {Qin, Tian and Bleiker, Simon J. and Rana, Sunil and Niklaus, Frank and Pamunuwa, Dinesh},
+	year = {2018},
+	keywords = {Relays, Nanoelectromechanical systems, Field programmable gate arrays, Metals, Integrated circuit interconnections, Silicon, Substrates, Nanoelectromechanical, microelectromechanical, relay, non-volatile, 3-terminal, 4-terminal, nano switch, MEMS, NEMS, FPGA, energy efficiency, high-temperature, radiation-hard, integration, back-end-of-line, CMOS},
+	pages = {15997--16009}
+}
 
-@string{jcp = {J.~Chem. Phys.}}
+@article{qasaimeh_comparing_2019,
+	title = {Comparing {Energy} {Efficiency} of {CPU}, {GPU} and {FPGA} {Implementations} for {Vision} {Kernels}.},
+	doi = {10.1109/ICESS.2019.8782524},
+	author = {Qasaimeh, Murad},
+	year = {2019},
+	pages = {1--8}
+}
 
-@string{josab = {J.~Opt. Soc. Am.~B}}
+@misc{kwon_algorithms_2013,
+	type = {Editorial},
+	title = {Algorithms for {Multispectral} and {Hyperspectral} {Image} {Analysis}},
+	url = {https://www.hindawi.com/journals/jece/2013/908906/},
+	language = {en},
+	urldate = {2020-09-05},
+	journal = {Journal of Electrical and Computer Engineering},
+	author = {Kwon, Heesung and Hu, Xiaofei and Theiler, James and Zare, Alina and Gurram, Prudhvi},
+	month = feb,
+	year = {2013},
+	doi = {https://doi.org/10.1155/2013/908906}
+}
 
-@string{prl = {Phys. Rev. Lett.}}
+@article{molero_fast_2011,
+	title = {Fast anomaly detection in hyperspectral images with {RX} method on heterogeneous clusters},
+	volume = {58},
+	issn = {1573-0484},
+	url = {https://doi.org/10.1007/s11227-011-0598-0},
+	doi = {10.1007/s11227-011-0598-0},
+	abstract = {Remotely sensed hyperspectral sensors provide image data containing rich information in both the spatial and the spectral domain, and this information can be used to address detection tasks in many applications. One of the most widely used and successful algorithms for anomaly detection in hyperspectral images is the RX algorithm. Despite its wide acceptance and high computational complexity when applied to real hyperspectral scenes, few approaches have been developed for parallel implementation of this algorithm. In this paper, we evaluate the suitability of using a hybrid parallel implementation with a high-dimensional hyperspectral scene. A general strategy to automatically map parallel hybrid anomaly detection algorithms for hyperspectral image analysis has been developed. Parallel RX has been tested on an heterogeneous cluster using this routine. The considered approach is quantitatively evaluated using hyperspectral data collected by the NASA’s Airborne Visible Infra-Red Imaging Spectrometer system over the World Trade Center in New York, 5 days after the terrorist attacks. The numerical effectiveness of the algorithms is evaluated by means of their capacity to automatically detect the thermal hot spot of fires (anomalies). The speedups achieved show that a cluster of multi-core nodes can highly accelerate the RX algorithm.},
+	language = {en},
+	number = {3},
+	urldate = {2020-09-05},
+	journal = {The Journal of Supercomputing},
+	author = {Molero, J. M. and Paz, A. and Garzón, E. M. and Martínez, J. A. and Plaza, A. and García, I.},
+	month = dec,
+	year = {2011},
+	pages = {411--419}
+}
 
-@string{rmp = {Rev. Mod. Phys.}}
+@incollection{amigo_chapter_2020,
+	series = {Hyperspectral {Imaging}},
+	title = {Chapter 1.1 - {Hyperspectral} and multispectral imaging: setting the scene},
+	volume = {32},
+	shorttitle = {Chapter 1.1 - {Hyperspectral} and multispectral imaging},
+	url = {http://www.sciencedirect.com/science/article/pii/B9780444639776000018},
+	abstract = {Hyperspectral imaging (HSI) and multispectral imaging (MSI) are becoming increasingly popular in science. Nowadays, it is very easy to find any scientific laboratory with cameras that can measure an image of a sample at different wavelengths. Moreover, the last advances in sensing technology and data mining are an important breakthrough for the imaging technologies. The first chapter of this book is an introduction of the main concepts about HSI and MSI. A comprehensive overview of the main methods to analyze HSI and MSI are given, defining the major steps usually taken in the analysis. The last part of this introduction highlights some of the main applications of this technology covered in this book.},
+	language = {en},
+	urldate = {2020-09-05},
+	booktitle = {Data {Handling} in {Science} and {Technology}},
+	publisher = {Elsevier},
+	author = {Amigo, José Manuel},
+	editor = {Amigo, José Manuel},
+	month = jan,
+	year = {2020},
+	doi = {10.1016/B978-0-444-63977-6.00001-8},
+	keywords = {Chemometrics, Data mining, HSI, Hyperspectral, MSI, Multispectral},
+	pages = {3--16}
+}
 
+@article{ochoa-ruiz_high-level_2012,
+	title = {A high-level methodology for automatically generating dynamic partially reconfigurable systems using {IP}-{XACT} and the {UML} {MARTE} profile},
+	volume = {16},
+	issn = {1572-8080},
+	url = {https://doi.org/10.1007/s10617-012-9098-6},
+	doi = {10.1007/s10617-012-9098-6},
+	abstract = {Dynamic Partial Reconfiguration (DPR) has been introduced in recent years as a method to increase the flexibility of FPGA designs. However, using DPR for building complex systems remains a daunting task. Recently, approaches based on Model-Driven Engineering (MDE) and UML MARTE standard have emerged which aim to simplify the design of complex SoCs, and in some cases, DPR systems. Nevertheless, many of these approaches lacked a standard intermediate representation to pass from high-levels of descriptions to executable models. However, with the recent standardization of the IP-XACT specification, there is an increasing interest to use it in MDE methodologies to ease system integration and to enable design flow automation. In this paper we propose an MARTE/MDE approach which exploits the capabilities of IP-XACT to model and automatically generate DPR SoC designs. We present the MARTE modeling concepts and how these models are mapped to IP-XACT objects; the emphasis is given to the generation of IP cores that can be used in the Xilinx EDK (Embedded Design Kit) environment, since we aim to develop a complete flow around their Dynamic Partial Reconfiguration design flow. Finally, we present a case study integrating the presented concepts, showing the benefits in design efforts compared with a purely VHDL approach and using solely EDK. Experimental results show a reduction of the design efforts required to obtain the netlist required for the DPR design flow from hours required in VHDL and Xilinx EDK, to less the one hour and minutes for IP integration.},
+	language = {en},
+	number = {3},
+	urldate = {2020-09-13},
+	journal = {Design Automation for Embedded Systems},
+	author = {Ochoa-Ruiz, Gilberto and Labbani, Ouassila and Bourennane, El-Bay and Soulard, Philippe and Cherif, Sana},
+	month = sep,
+	year = {2012},
+	pages = {93--128}
+}
 
-@book{GEN:Bransden:2003,
-	Author = {B.~H.~Bransden and C.~J.~Joachain},
-	Publisher = {New York: Prentice-Hall},
-	Title = {Physics of Atoms and Molecules},
-	Volume = {2nd Ed.},
-	Year = 2003}
+@article{unnikrishnan_parallel_2016,
+	series = {International {Conference} on {Emerging} {Trends} in {Engineering}, {Science} and {Technology} ({ICETEST} - 2015)},
+	title = {Parallel {Computation} {Using} {DSP} {Slices} in {FPGA}},
+	volume = {24},
+	issn = {2212-0173},
+	url = {http://www.sciencedirect.com/science/article/pii/S2212017316301487},
+	doi = {10.1016/j.protcy.2016.05.064},
+	abstract = {The sophistication of applications and hunger for high quality digital data demands increase in the processing power. High performance signal processing is possible only though parallelism. At the same time, flexibility and scalability are the need of the hour due to dynamically changing standards and design up gradation. This paper describes an implementation of the computational framework using the DSP Slices in the FPGA. The customized instructions will provide the computation flexibility whereas specialized DSP macros in FPGA ensure high performance.},
+	language = {en},
+	urldate = {2020-09-13},
+	journal = {Procedia Technology},
+	author = {Unnikrishnan, K. Supriya and Madhavan, Sudheesh},
+	month = jan,
+	year = {2016},
+	keywords = {FPGA, DSP, Parallel Processing},
+	pages = {1127--1134}
+}
 
-@book{GEN:Bransden:2003,
-	Author = {S.~H.~Patil and K.~T.~Tang},
-	Publisher = {Berlin; New York: Springer},
-	Title = {Asymptotic Methods in Quantum Mechanics: Application to Atoms, Molecules, and Nuclei},
-	Year = 2000}
+@inproceedings{zhou_efficient_2013,
+	title = {Efficient {Hough} {Transform} on the {FPGA} using {DSP} {Slices} and {Block} {RAMs}},
+	doi = {10.1109/IPDPSW.2013.86},
+	abstract = {The main contribution of this paper is to present a new FPGA architecture for the Hough transform that identifies straight lines in a binary image. Recent FPGAs have hundreds of embedded DSP slices and block RAMs. For example, Xilinx Virtex-6 Family FPGAs have a DSP48E1 slice, which is a configurable logic block equipped with fast multipliers, adders, pipeline registers, and so on. They also have a dual-port memory with 18Kbits as a block RAM. One of the most important key techniques for accelerating computation using FPGAs is an efficient usage ofDSP slices and block RAMs. Our new architecture for the Hough transform uses 178 DSP48E1 slices and 180 block RAMs with 18Kbits that work in parallel. As far as we know, there is no previously published work that fully utilizes DSP slices and block RAMs for the Hough transform. Roughly speaking, a conventional sequential implementation performs 180m voting operations for m edge points. Our architecture performs voting operations in parallel, and outputs identified straight lines in m+97 clock cycles. Since 180m voting operations are performed using 178 DSP48E1 slices, the lower bound of the computing time is m clock cycles. Hence our implementation is close to optimal. The implementation results show that the Hough transform for a 512×512 image with 33232 edge points can be done in only 135.75us.},
+	booktitle = {2013 {IEEE} {International} {Symposium} on {Parallel} {Distributed} {Processing}, {Workshops} and {Phd} {Forum}},
+	author = {Zhou, Xin and Tomagou, Norihiro and Ito, Yasuaki and Nakano, Koji},
+	month = may,
+	year = {2013},
+	keywords = {digital signal processing chips, field programmable gate arrays, Hough transforms, image processing, parallel architectures, random-access storage, Hough transform, block RAM, FPGA architecture, binary image, embedded DSP slices, DSP48E1 slices, sequential implementation, voting operations, edge points, clock cycles, Transforms, Random access memory, Field programmable gate arrays, Digital signal processing, Computer architecture, Ports (Computers), Clocks, Image processing, Line detection, Hough transform, FPGA, Embedded DSP slices, Embedded block RAMs},
+	pages = {771--778}
+}
 
-@article{ARP:Loy:1974,
-	Author = {M.~M.~T.~Loy},
-	Journal = PRL,
-	Pages = {814-817},
-	Title = {Observation of Population Inversion by Optical Adiabatic Rapid Passage},
-	Volume = {32},
-	Year = {1974}}
+@article{borsoi_spectral_2020,
+	title = {Spectral {Variability} in {Hyperspectral} {Data} {Unmixing}: {A} {Comprehensive} {Review}},
+	shorttitle = {Spectral {Variability} in {Hyperspectral} {Data} {Unmixing}},
+	url = {http://arxiv.org/abs/2001.07307},
+	abstract = {The spectral signatures of the materials contained in hyperspectral images (HI), also called endmembers (EM), can be significantly affected by variations in atmospheric, illumination or environmental conditions typically occurring within an HI. Traditional spectral unmixing (SU) algorithms neglect the spectral variability of the endmembers, what propagates significant mismodeling errors throughout the whole unmixing process and compromises the quality of its results. Therefore, large efforts have been recently dedicated to mitigate the effects of spectral variability in SU. This resulted in the development of algorithms that incorporate different strategies to allow the EMs to vary within an HI, using, for instance, sets of spectral signatures known a priori, Bayesian, parametric, or local EM models. Each of these approaches has different characteristics and underlying motivations. This paper presents a comprehensive literature review contextualizing both classic and recent approaches to solve this problem. We give a detailed evaluation of the sources of spectral variability and their effect in HI spectra. Furthermore, we propose a new taxonomy that organizes existing work according to a practitioner's point of view, based on the necessary amount of supervision and on the computational cost they require. We also review methods used to construct spectral libraries (which are required by many SU techniques) based on the observed HI, as well as algorithms for library augmentation and reduction. Finally, we conclude the paper with some discussions and an outline of possible future directions for the field.},
+	urldate = {2020-09-13},
+	journal = {arXiv:2001.07307 [eess]},
+	author = {Borsoi, Ricardo Augusto and Imbiriba, Tales and Bermudez, José Carlos Moreira and Richard, Cédric and Chanussot, Jocelyn and Drumetz, Lucas and Tourneret, Jean-Yves and Zare, Alina and Jutten, Christian},
+	month = jan,
+	year = {2020},
+	note = {arXiv: 2001.07307},
+	keywords = {Electrical Engineering and Systems Science - Image and Video Processing, Electrical Engineering and Systems Science - Signal Processing}
+}
 
-@article{ARP:Melinger:1991,
-	Author = {J.~S.~Melinger and A.~Hariharan and S.~R.~Gandhi and W.~S.~Warren},
-	Journal = JCP,
-	Pages = {2210-2213},
-	Title = {Adiabatic population inversion in $I_{2}$ vapor with picosecond laser pulses},
-	Volume = {95},
-	Year = {1991}}
+@inproceedings{tang_multi-fpga_2014,
+	title = {Multi-{FPGA} prototyping board issue: the {FPGA} {I}/{O} bottleneck},
+	shorttitle = {Multi-{FPGA} prototyping board issue},
+	doi = {10.1109/SAMOS.2014.6893213},
+	abstract = {Multi-FPGA boards are widely used for rapid system prototyping. As the ratio between the logic capacity and the number of I/Os for each FPGA generation is increasing, FPGA I/Os are becoming a scarce resource. In order to resolve pin limitation problem, cut nets are sent between FPGAs in a pipelined way using the Time-Division-Multiplexing technique. The maximum number of cut nets passing through one FPGA I/O is called the TDM ratio. There are three inter-FPGA communication architectures: Logic Multiplexing, ISERDES/OSERDES and Multi-Gigabit Transceiver (MGT). Only Logic Multiplexing and ISERDES/OSERDES are today used for Time-Division-Multiplexing in the multi-FPGA based prototyping. In this paper, the achieved performance of Logic Multiplexing and ISERDES/OSERDES is compared in different TDM ratios and a hybrid multiplexing architecture using both ISERDES/OSERDES and MGT is proposed. Experiments are done in a multi-FPGA board with the testbench LFSR to validate the achieved performance. The results show that even though consuming more FPGA I/Os for data transmission, ISERDES/OSERDES can achieve higher performance than Logic Multiplexing. The proposed architecture can achieve higher performance than ISERDES/OSERDES when the TDM ratio exceeds 54. The maximum gain in performance is about 20\%.},
+	booktitle = {2014 {International} {Conference} on {Embedded} {Computer} {Systems}: {Architectures}, {Modeling}, and {Simulation} ({SAMOS} {XIV})},
+	author = {Tang, Qingshan and Mehrez, Habib and Tuna, Matthieu},
+	month = jul,
+	year = {2014},
+	keywords = {field programmable gate arrays, time division multiplexing, transceivers, multiFPGA prototyping board, FPGA I/O bottleneck, rapid system prototyping, cut nets, time-division-multiplexing technique, TDM ratio, logic multiplexing, ISERDES/OSERDES, multigigabit transceiver, MGT, Field programmable gate arrays, Synchronization, Clocks, Time division multiplexing, Delays, Computer architecture, Multi-FPGA Based Prototyping, Inter-FPGA Communication, Multi-Gigabit Transceiver},
+	pages = {207--214}
+}
 
-@article{CT:Phillips:1985,
-	Author = {W.~D.~Phillips and J.~V.~Prodan and H.~J.~Metcalf},
-	Journal = JOSAB,
-	Pages = {1751-1767},
-	Title = {Laser cooling and electromagnetic trapping of neutral atoms},
-	Volume = {2},
-	Year = {1985}}
+@article{alberto_oliveira_de_souza_junior_exploration_2020,
+	title = {Exploration of {FPGA}-{Based} {Hardware} {Designs} for {QR} {Decomposition} for {Solving} {Stiff} {ODE} {Numerical} {Methods} {Using} the {HARP} {Hybrid} {Architecture}},
+	volume = {9},
+	copyright = {http://creativecommons.org/licenses/by/3.0/},
+	url = {https://www.mdpi.com/2079-9292/9/5/843},
+	doi = {10.3390/electronics9050843},
+	abstract = {In this article, we focus on the acceleration of a chemical reaction simulation that relies on a system of stiff ordinary differential equation (ODEs) targeting heterogeneous computing systems with CPUs and field-programmable gate arrays (FPGAs). Specifically, we target an essential kernel of the coupled chemistry aerosol-tracer transport model to the Brazilian developments on the regional atmospheric modeling system (CCATT-BRAMS). We focus on a linear solve step using the QR factorization based on the modified Gram-Schmidt method as the basis of the ODE solver in this application. We target Intel hardware accelerator research program (HARP) architecture with the OpenCL programming environment for these early experiments. Our design exploration reveals a hardware design that is up to 4 times faster than the original iterative Jacobi method used in this solver. Still, even with hardware support, the overall performance of our QR-based hardware is lower than its original software version.},
+	language = {en},
+	number = {5},
+	urldate = {2020-09-13},
+	journal = {Electronics},
+	author = {Alberto Oliveira de Souza Junior, Carlos and Bispo, João and Cardoso, João M. P. and Diniz, Pedro C. and Marques, Eduardo},
+	month = may,
+	year = {2020},
+	keywords = {ODE, linear-solver, QR factorization, parallel, heterogeneous-system, FPGA, OpenCL, Intel HARP architecture},
+	pages = {843}
+}
 
-@article{CT:Weiner:1999,
-	Author = {J.~Weiner and V.~S.~Bagnato and S.~Zilio and P.~S.~Julienne},
-	Journal = RMP,
-	Pages = {1-85},
-	Title = {Experiments and theory in cold and ultracold collisions},
-	Volume = {71},
-	Year = {1999}}
+@misc{borghys_hyperspectral_2012,
+	type = {Research {Article}},
+	title = {Hyperspectral {Anomaly} {Detection}: {Comparative} {Evaluation} in {Scenes} with {Diverse} {Complexity}},
+	shorttitle = {Hyperspectral {Anomaly} {Detection}},
+	url = {https://www.hindawi.com/journals/jece/2012/162106/},
+	abstract = {Anomaly detection (AD) in hyperspectral data has received a lot of attention for various applications. The aim of anomaly detection is to detect pixels in the hyperspectral data cube whose spectra differ significantly from the background spectra. Many anomaly detectors have been proposed in the literature. They differ in the way the background is characterized and in the method used for determining the difference between the current pixel and the background. The most well-known anomaly detector is the RX detector that calculates the Mahalanobis distance between the pixel under test (PUT) and the background. Global RX characterizes the background of the complete scene by a single multivariate normal probability density function. In many cases, this model is not appropriate for describing the background. For that reason a variety of other anomaly detection methods have been developed. This paper examines three classes of anomaly detectors: subspace methods, local methods, and segmentation-based methods. Representative examples of each class are chosen and applied on a set of hyperspectral data with diverse complexity. The results are evaluated and compared.},
+	language = {en},
+	urldate = {2020-09-14},
+	journal = {Journal of Electrical and Computer Engineering},
+	author = {Borghys, Dirk and Kåsen, Ingebjørg and Achard, Véronique and Perneel, Christiaan},
+	month = nov,
+	year = {2012},
+	doi = {https://doi.org/10.1155/2012/162106}
+}
 
-@article{CT:Gould:1988,
-	Author = {P.~L.~Gould and P.~D.~Lett and P.~S.~Julienne and W.~D.~Phillips},
-	Journal = PRL,
-	Pages = {788-791},
-	Title = {Observation of Associative Ionization of Ultracold Laser-Trapped Sodium Atoms},
-	Volume = {60},
-	Year = {1988}}
+@misc{rosario_semiparametric_2012,
+	title = {A semiparametric model for hyperspectral anomaly detection},
+	url = {https://doi.org/10.1155/2012/425947},
+	abstract = {Using hyperspectral (HS) technology, this paper introduces an autonomous scene anomaly detection approach based on the asymptotic behavior of a semiparametric model under amultisample testing andminimum-order statistic scheme. Scene anomaly detection has a wide range of use in remote sensing applications, requiring no specific material signatures. Uniqueness of the approach includes the following: (i) only a small fraction of the HS cube is required to characterize the unknown clutter background, while existing global anomaly detectors require the entire cube; (ii) the utility of a semiparematric model, where underlying distributions of spectra are not assumed to be known but related through an exponential function; (iii) derivation of the asymptotic cumulative probability of the approach making mistakes, allowing the user some control of probabilistic errors. Results using real HS data are promising for autonomous manmade object detection in difficult natural clutter backgrounds from two viewing perspectives: nadir and forward looking.},
+	urldate = {2020-09-14},
+	publisher = {Hindawi Limited},
+	author = {Rosario, Dalton},
+	month = jan,
+	year = {2012}
+}
 
-@misc{DMatrix:DePaola:2003,
-	Author = {B.~D.~DePaola},
-	Howpublished = {Kansas State University, Manhattan, KS},
-	Note = {(Unpublished)},
-	Title = {Lectures on Coherent Excitation},
-	Year = {2003}}
-
-@misc{DMatrix:Weaver:2005,
-	Author = {O.~L.~Weaver},
-	Howpublished = {Kansas State University, Manhattan, KS},
-	Note = {(Private Communication)},
-	Year = {2005}}
-
-@phdthesis{DMatrix:Nguyen:2003,
-	Author = {H.~Nguyen},
-	School = {Kansas State University},
-	Title = {MOTRIMS},
-	Year = {2003}}
-
-@misc{Note:Params1:2005,
-	Note = {You can add the text of a note between the braces.}}
-
-@misc{Note:Params2:2005,
-	Note = {For Fig.~\ref{fig:chap02:Mathematica:DvsDetuning}, the following parameters were          used:  $I_{p} = 20$~W/cm$^{2}$, $I_{s}$ was set such that the Rabi frequencies, $\Omega_{p}$ and          $\Omega_{s}$ were equal, $w_{p} = w_{s} = 50$~ns and $\tau = -80$~ns.  Both $\Delta_{1}$ and          $\Delta_{2}$ (one- and two-photon resonance, respectively) were allowed to vary.}}
+@article{matteoli_tutorial_2010,
+	title = {A tutorial overview of anomaly detection in hyperspectral images},
+	volume = {25},
+	issn = {1557-959X},
+	doi = {10.1109/MAES.2010.5546306},
+	abstract = {In this paper, a tutorial overview on anomaly detection for hyperspectral electro-optical systems is presented. This tutorial is focused on those techniques that aim to detect small man-made anomalies typically found in defense and surveillance applications. Since a variety of methods have been proposed for detecting such targets, this tutorial places emphasis on the techniques that are either mathematically more tractable or easier to interpret physically. These methods are not only more suitable for a tutorial publication, but also an essential to a study of anomaly detection. Previous surveys on this subject have focused mainly on anomaly detectors developed in a statistical framework and have been based on well-known background statistical models. However, the most recent research trends seem to move away from the statistical framework and to focus more on deterministic and geometric concepts. This work also takes into consideration these latest trends, providing a wide theoretical review without disregarding practical recommendations about algorithm implementation. The main open research topics are addressed as well, the foremost being algorithm optimization, which is required for embodying anomaly detectors in real-time systems.},
+	number = {7},
+	journal = {IEEE Aerospace and Electronic Systems Magazine},
+	author = {Matteoli, Stefania and Diani, Marco and Corsini, Giovanni},
+	month = jul,
+	year = {2010},
+	keywords = {object detection, object recognition, tutorial overview, anomaly detection, hyperspectral images, hyperspectral electro-optical systems, algorithm optimization, target detection, target recognition, Tutorial, Hyperspectral imaging, Detectors, Surveillance, Real time systems},
+	pages = {5--28}
+}
