@@ -59,9 +59,9 @@ The covariance, a $band^2$ matrix is then transmitted to the FPGA to calculate i
 \subsection{Inverse}
 \subsubsection{Choosing the algorithm}
 Before starting the implementation, several algorithms to perform the inverse have been studied.
-\paragraph{QR Factorization\citep{alberto_oliveira_de_souza_junior_exploration_2020}:}
+\paragraph{QR Factorization \cite{alberto_oliveira_de_souza_junior_exploration_2020}:}
 QR factorization breaks down the $A$ matrix into the product of two matrices $A = QR$, with $Q$ being an orthogonal matrix and $R$ a superior triangular matrix. With this triangular matrix it becomes easy to calculate the inverse. However, although QR factorization can be efficiently performed on a powerful matrix multiplication module or several modules that can be executed simultaneously, such as in a GPU, it does not take advantage of the capabilities provided by our system such as arbitrary width arithmetic units.
-\paragraph{Gauss Jordan elimination method\cite{gonzalez_fpga_2016}:}
+\paragraph{Gauss Jordan elimination method \cite{gonzalez_fpga_2016}:}
 The Gauss Jordan method dictates that if we have a $A$ matrix that can be transformed into the identity matrix through elementary operations, these same operations transform the identity matrix into $A^{-1}$. Since it is possible to execute these elementary operations in an entire row at once and the operations between rows are independent, this method is easily parallelizable.
 Therefore, this was the chosen method.
 \\
@@ -73,8 +73,8 @@ Generally speaking, the execution of the algorithm takes place in such a way tha
 \item The result is in the matrix generated in the first step
 \end{enumerate}
 \noindent As seen in the following pseudocode, these elementary operations are performed in 3 steps:
-\\
-\\
+
+\pagebreak
 \begin{algorithm}
   \caption{Pseudocode of the Gauss Jordan method}
   \begin{algorithmic}[1]
@@ -83,7 +83,7 @@ Generally speaking, the execution of the algorithm takes place in such a way tha
     \State{$A^{-1}$ : an identity matrix with the size $n*n$}
     \Statex
     \Function{inverse}{$A$}
-      \For{$i \gets 0 \textrm{ to } n-1$} \Comment{Forward elimination to build the upper trangular matrix}
+      \For{$i \gets 0 \textrm{ to } n-1$} \Comment{Forward elimination to build the upper triangular matrix}
       \LineComment{row $i$ acts as the pivot}
       \If{$A[i][i] = 0$}   \Comment{If the later divisor is 0}
       	\For{$j \gets i+1 \textrm{ to } n-1$}
@@ -95,7 +95,7 @@ Generally speaking, the execution of the algorithm takes place in such a way tha
       \For{$j \gets 0 \textrm{ to } n-1$}
         \State{$A^{-1}[j] \gets A^{-1}[j]-A^{-1}[i]*(A[j][i]/A[i][i])$}
         \State{$A[j] \gets A[j]-A[i]*(A[j][i]/A[i][i])$}
-        \Comment{These two operations may run in parallel}
+        \Comment{These two lines run in parallel}
       \EndFor
       \LineComment{After a complete iteration of the outer loop, the pivot contains the desired form}
       \EndFor
@@ -105,7 +105,7 @@ Generally speaking, the execution of the algorithm takes place in such a way tha
       \For{$j \gets i-1 \textrm{ to } 0$}
         \State{$A^{-1}[j] \gets A^{-1}[j]-A^{-1}[i]*(A[j][i]/A[i][i])$}
         \State{$A[j] \gets A[j]-A[i]*(A[j][i]/A[i][i])$}
-        \Comment{These two operations may run in parallel}
+        \Comment{These two lines run in parallel}
       \EndFor
       \EndFor
       \\
@@ -119,9 +119,6 @@ Generally speaking, the execution of the algorithm takes place in such a way tha
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
-
-It is also possible to calculate the inverse directly for each row, performing the three steps consecutievly in a row, but this way limits the parallelization between different rows.
-
 \clearpage
 
 \subsection{Matrix multiplication}
@@ -145,17 +142,20 @@ Since the operands are heterogeneous, use can be made of the associative law on 
 \paragraph{}
 \phantomsection
 \label{alternativa}
-In the implementation sectiona study on what alternative to use will be carried out, as this depends heavily on the hardware architecture.
+In the implementation section, a study on what alternative to use will be carried out, as this depends heavily on the hardware architecture.
 
 \section{Adapting the arithmetic}
 As shown before in \autoref{fig:fp}, floating point arithmetic operations are very inefficient compared to fixed point operations. In the next chapter a transformation strategy will be defined and the steps followed to make this transition will be shown.
 \\
 \\
-Taking advantage that the RX algorithm only needs relative and not exact values, ie, the highest value found in the results will be the most anomalous -see \ref{mayor}- regardless of whether it exceeds a certain threshold or not, the fixed-point representation may be simplified by ignoring the fractional part and keeping only the integer.
+Taking advantage that the RX algorithm only needs relative and not exact values, ie, the highest value found in the results will be the most anomalous (see \ref{mayor}) regardless of whether it exceeds a certain threshold or not, the fixed-point representation may be simplified by ignoring the fractional part and keeping only the integer.
 
 \subsection{DSP Blocks}
-The DSP blocks are prefabricated circuits found next to the FPGA logic and implement arithmetic operations. These blocks allow to perform operations more efficiently and operate at higher frequencies than equivalent logic in the fabric, besides not occupying space in it. However, as they are prefabricated blocks, they do not offer the same flexibility as the rest of the FPGA logic. This implies that the size of the operands and the cost of operation resources will not always be proportionally related. Therefore, different widths have been tested and their resource usage has been noted. The results of these tests for multiplication are in the following table:
-
+The DSP blocks are prefabricated circuits found next to the FPGA logic and implement arithmetic operations. These blocks allow to perform operations more efficiently and operate at higher frequencies than equivalent logic in the fabric, besides not occupying space in it. However, as they are prefabricated blocks, they do not offer the same flexibility as the rest of the FPGA logic. This implies that the size of the operands and the cost of operation resources will not always be proportionally related. Therefore, different widths have been tested and their resource usage has been noted.
+\\
+\\
+\noindent The results of these tests for multiplication are in the following table:
+\begin{table}[h!]
 \begin{center}
  \begin{tabular}{|c c |c|} 
  \hline
@@ -174,27 +174,29 @@ The DSP blocks are prefabricated circuits found next to the FPGA logic and imple
  52 & 42 & 6 \\
  \hline
 \end{tabular}
+\caption[DSP usage for multipliers with diferent widths]{Depending on the width of the operands, the operation will use a different amount of resources (data obtained for signed multiplication in Vivado 2019.2 on Xilinx Series 7 chips)}
 \end{center}
-Depending on the width of the operands, the operation will use a different amount of resources (data obtained for signed multiplication in Vivado 2019.2 on Xilinx Series 7 plates)
-\\
+\end{table}
 \\
 For subtraction operations up to 48bits, only one DSP is used, so they are not expected to require more than one block.
 \\
 The divisions cannot be implemented by this type of blocks, so they will use standard logic and can be used with an arbitrary width.
 \\
 \\
-With this data for all the operations that are going to be carried out in the FPGA is recorded.
-\\
-\\
-A hardware model implemented in software was used to determine the width of the multiplications. This model truncates both the input and output operands of each operation. The final results correspond then to the ratio of anomalies that are between the first x, up to 30.
+With this, data for all the operations that are going to be carried out in the FPGA is recorded.
+
+\pagebreak
+\subsection{Determining multiplier size}
+The operand dimensions for the multiplier still must be determined. For this, the first operation for the inverse was done with all possible shift values, with all previous operations unshifted and all later operations implemented in floating point.
+
 \begin{figure}[h!]
 \centering
-\includegraphics[height=2.5in]{figures/width.png}
-\caption{Ratio of anomalies found in the first x using different bit widths for the multiplication. Dataset: Hydice}
-  \label{fig:width}
+\includegraphics[height=4.5in]{figures/res_f.png}
+\caption[Precision of calculations with different shift values]{Ratio of anomalies found in the first x using different bit widths for the multiplication. A red line represents the results for a value of 20. Dataset: HYDICE}
+  \label{fig:res_f}
 \end{figure}
 
-Como se puede observar en \autoref{fig:width}, ESTO TENGO QUE REPETIRLO.
+The results depict the ratio of anomalies found till that point in x. The line for 20 is depicted red since this was the chosen value, since it provides the highest detection for the first anomalies, those being the highest result numbers, without producing an overflow. The value of the multiplier operands should also approximate $64-20 = 44$ for an operand. The widths representing $42$ and $35$ were then chosen as a starting point as they are the cheapest ones resource swise that fullfill this requirement.
 \\
 
 \subsection{Improving accuracy}
@@ -204,5 +206,3 @@ For example, the divisions made in the inverse calculation produce very small nu
 \\
 \\
 The results indicated that the greatest loss of accuracy occurred in the inverse calculation. Therefore, the model was revised and shifts were included in the initial matrix capture, in the initialization in the case of $A^{-1}$ and in the transfer to the FPGA in the case of $A$. Different shifts were also included for each phase of the inverse.
-
-

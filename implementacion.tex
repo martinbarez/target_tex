@@ -1,9 +1,7 @@
 % +--------------------------------------------------------------------+
 % | Sample Chapter 3
 % +--------------------------------------------------------------------+
-
 \cleardoublepage
-
 % +--------------------------------------------------------------------+
 % | Replace "This is Chapter 3" below with the title of your chapter.
 % | LaTeX will automatically number the chapters.
@@ -12,29 +10,29 @@
     %\renewcommand{\thechapter}{}
 \chapter{Implementation}
 \label{makereference}
-
+\begin{minipage}{\textwidth}
 \section{General overview of the system}
 The camera provides the pixels in the image by bands. The first operations to be performed with this data are to calculate the average, with it the deviation and then the covariance. Because of the relative simplicity of these operations but their high memory requirements, these three operations are performed on a CPU and their results sent to the FPGA. The FPGA will start the calculation of the subsequent operations only when it has the complete results of the covariance.
-The data calculated by the CPU is entered into the FPGA through FIFOs.
-The FPGA will then calculate the inverse of the matrix. Meanwhile the CPU will have to write the calculated averages and the values it had previously received from the camera, one by one. When the inverse is finished, the FPGA will perform the last two matrix multiplications and save the resulting data. With the last pixel processed, the FPGA will write the anomalies ordered from highest to lowest in another FIFO to be read by the CPU.
-\pagebreak
 
-\begin{figure}
-\centering\textbf{
-\includegraphics[height=7.5in]{figures/bus.png}}
-\caption{A schematic of the whole system.}
-  \label{fig:bus}
-\end{figure}
-\clearpage
-\pagebreak
+The data calculated by the CPU is entered into the FPGA through FIFOs.
+
+The FPGA will then calculate the inverse of the matrix. Meanwhile the CPU will have to write the calculated averages and the values it had previously received from the camera, one by one. When the inverse is finished, the FPGA will perform the last two matrix multiplications and save the resulting data. With the last pixel processed, the FPGA will write the anomalies ordered from highest to lowest in another FIFO to be read by the CPU.
 
 \section{Description by module}
 \subsection{Control}
 This module acts on the lower modules, both to control the data transfer between them and to arbitrate the access to the RAMS and the FIFOs that communicate with the CPU.
 
 It is worth mentioning that it also performs some checks in the covariance transfer to ensure that the first division of the inverse is not performed with a 0, that is, that the position (0, 0) in the covariance matrix is different from 0.
-\\
-\\
+\end{minipage}
+\setcounter{page}{20}
+
+\begin{figure}
+\centering\textbf{
+\includegraphics[height=7.5in]{figures/bus.png}}
+\caption[A schematic of the top block]{A schematic of the whole system}
+  \label{fig:bus}
+\end{figure}
+
 %\begin{lstlisting}
 %IDLE:
 %  if start then
@@ -88,18 +86,20 @@ The inverse is the most complex module and the one that consumes more hardware r
 \caption{Schematic of the implemented inverter}
   \label{fig:gauss}
 \end{figure}
+
 As can be seen in \autoref{fig:gauss}, there are numerous processes and sub-modules within the inverter. The process that acts as an interface to the outside is \textit{counter}, which as its name suggests contains counters to calculate the rows to be read, written, etc. It is the main process of the module. The counters are translated into addresses by another pair of processes, more specifically \textit{addr}, \textit{write} and \textit{stall} and a renaming table to which these three have access. The data that are read from the memories are then saved in temporary storage or directly to the arithmetic units. Before the arithmetic units is another process, \textit{shift}, which shifts the data as modeled in software. These units are used for the three steps of the algorithm, upper triangle, lower triangle and diagonal, and it is the \textit{counter} process that controls their execution order. The rest of the processes will be explained in more detail within the chapter.
 
-
+\pagebreak
 \subsubsection{Agorithm optimizations for hardware}
 To improve the performance of the module, operations on the $A$ matrix and the $A{-1}$ matrix are executed simultaneously. In addition, the divisor and DSP pipelines are used to queue all possible consecutive operations. Pipeline stalling only occurs, if calculations are still being processed with the last pivot row.
-The following table shows the arithmetic units inside the module and their latencies. These latencies represent the length of its pipeline.
+\autoref{latencias} shows the arithmetic units inside the module and their latencies. These latencies represent the length of its pipeline.
 \newcommand{\hr}[1]{%
   \colorbox{red!20}{$\displaystyle#1$}}
 \newcommand{\hg}[1]{%
   \colorbox{green!20}{$\displaystyle#1$}}
 \newcommand{\hb}[1]{%
   \colorbox{blue!20}{$\displaystyle#1$}}
+\begin{table}[h!]
 \begin{center}
  \begin{tabular}{|c c c c|} 
  \hline
@@ -113,9 +113,14 @@ The following table shows the arithmetic units inside the module and their laten
  \hline
 \end{tabular}
 \end{center}
+\caption[Latencies for some arithmetic units]{Latencies and number of the arithmetic units in the inverter module.}
+\label{latencias}
+\end{table}
 
-The following equations indicate which calculations are found within the DSP pipeline at any given time. The results of each operation are sent directly to the calculation of the next operation, while the counters control that the other operands arrive at the right time.
+Equations \ref{pip_pop} indicate which calculations are found within the DSP pipeline at any given time. The results of each operation are sent directly to the calculation of the next operation, while the counters control that the other operands arrive at the right time.
+
 \newcommand{\twodots}{\MTFlushSpaceAbove\vdotswithin{\gets}&&\vdotswithin{\gets}\MTFlushSpaceBelow}
+\begin{figure}[h!]
 \begin{align*}
 %A^{-1}[87]\gets&A^{-1}[87]-A[i]^{-1}*A[87][i]/A[i][i],\ 
 %&A[87]\gets&A[87]-A[i]*A[\jv][i]/A[i][i]\\
@@ -137,26 +142,31 @@ A^{-1}[1]\gets&\hb{A^{-1}[1]-mul\_result},\
 A^{-1}[0]\gets&\hb{sub\_result},\ 
 &A[0]\gets&\hb{sub\_result}
 \end{align*}
+\caption[Arithmetic pipeline]{Operations representing the arithmetic pipeline at any given moment. Colors denote if a operation is currently in progress.}
+\label{pip_pop}
+\end{figure}
 
-One of the operands is the row \textit{j}, which is used at two different times within the algorithm. Since a second read on the BRAM cannot be done since it is busy performing the read of the next operations, this data is stored at the time of reading in a FIFO and will be fetched when needed.
+\pagebreak
+One of the operands is the row \j, which is used at two different times within the algorithm (see \autoref{jjj}). Since a second read on the BRAM cannot be done since it is busy performing the read of the next operations, this data is stored at the time of reading in a FIFO and will be fetched when needed.
 \newcommand{\highlight}[1]{%
   \colorbox{yellow!20}{$\displaystyle#1$}}
 \begin{figure}[h!]
 \[A^{-1}[j] \gets \highlight{A^{-1}[j]}-A[i]*\highlight{A[j][i]}/A[i][i]\]
-\caption{As can be seen in the algorithm, row j is used at two different times.}
+\caption[Data depency in the pipeline]{As can be seen in the algorithm, row j is used at two different times.}
+\label{jjj}
 \end{figure}
 \\
 \\
 Additionaly, it can be observed that in the first step in which the upper triangular matrix is constructed, the algorithm requires a check on the pivot row and a possible exchange of rows. This is necessary because this value is later the dividend, so a 0 would cause a failure in the calculation.
 \\
-BRAM memory readings have a latency cycle, so reading an inappropriate value two cycles in a row -in the case of reading an inappropriate and then an appropriate value, there would be the possibility of performing an inplace row swap with the pivot and the row just after it- would not only add latency to the calculation but also increase the complexity of the module. Therefore the dividend checks are done on the writes, recorded in a renaming table that will be checked at the time of reading. This ensures that the reads will always be valid for the calculation. In the case of the very first division, this dividend comes directly from the CPU and the upper module \textit{control} is responsible for reordering this row if necessary.
+BRAM memory readings have a latency cycle, so reading an inappropriate value two cycles in a row -in the case of reading an inappropriate and then an appropriate value, there would be the possibility of performing an inplace row swap with the pivot and the row just after it- would not only add latency to the calculation but also increase the complexity of the module. Therefore, the dividend checks are done on the writes, recorded in a renaming table that will be checked at the time of reading. This ensures that the reads will always be valid for the calculation. In the case of the very first division, this dividend comes directly from the CPU and the upper module \textit{control} is responsible for reordering this row if necessary.
 \\
-This renaming table is located in registers so it is possible to access it without any latency and as it only contains indexes, it does not overload the FPGA resources. In addition, this table is local, so the results have to be reordered in the RAM itself before leaving the inverse module. Since these swaps only occur in the calculation of the upper triangle, the lower triangle can be used to reorder them. The reordering system is very simple, the data enters the pipeline according to the order that exists in the renaming table and is written in its natural order. This implies that the results of this reordering will be correct as long as both rows that have been rotated are at the same time in the processing pipeline, which in the case of fixed point is approximately 90 in size. Experimental results show that it is rarely necessary to rotate rows -although enough to recommend the inclusion of a method to deal with it-, and that these rotations rarely exceed one or two positions in the pipeline.
+This renaming table is located in registers, so it is possible to access it without any latency and as it only contains indexes, it does not overload the FPGA resources. In addition, this table is local, so the results have to be reordered in the RAM itself before leaving the inverse module. Since these swaps only occur in the calculation of the upper triangle, the lower triangle can be used to reorder them. The reordering system is very simple, the data enters the pipeline according to the order that exists in the renaming table and is written in its natural order. This implies that the results of this reordering will be correct as long as both rows that have been rotated are at the same time in the processing pipeline, which in the case of fixed point is approximately 90 in size. Experimental results show that it is rarely necessary to rotate rows -although enough to recommend the inclusion of a method to deal with it-, and that these rotations rarely exceed one or two positions in the pipeline.
 \\
 \\
 In the transformation to integer arithmetic it was discovered that the calculation of the inverse is the one introducing more error in the final results of the algorithm, therefore an exhaustive study on how to minimize it has been made. For this it has been necessary to reduce the values in which the limited precision produced overflows and increase small values to give them more weight in the operations. By performing the operations of identity generation, upper triangle, lower triangle and diagonal independently, it has been possible to place different shift values and further refine the resolution of the algorithm. These operations are performed by the \textit{shift} process.
 \\
-It should also be said that there is an error in the generation of Xilinx dividers. When you enter numbers near the precision limit you lose control of the sign. Therefore a process, \textit{div\_fix}, that converts all the entered operands into positives and saves their position in a pipeline has been placed before the division. When the results are produced, the tag is checked in the pipeline, the negative is calculated and replaced if necessary.
+It should also be said that there is an error in the generation of Xilinx dividers. When you enter numbers near the precision limit you lose control of the sign. Therefore, \textit{div\_fix}, a process that converts all the entered operands into positives and saves their position in a pipeline has been placed before the division. When the results are produced, the tag is checked in the pipeline, the negative is calculated and replaced if necessary.
 
 \subsection{Mean subtract}
 
@@ -179,7 +189,7 @@ The module receives the elements from the upper module that reads them from the 
 \newcommand\rr{\rowcolor{red!20}}
 \newcommand\br{\rowcolor{blue!20}}
 \newcommand\gr{\rowcolor{green!20}}
-As noted above,  \ref{alternativa}, this calculation can be implemented in two different ways.
+As noted above (see \ref{alternativa}), this calculation can be implemented in two different ways.
 \noindent Following will be a comparison of the first required multiplication in both methods:
 \begin{quote}
 	\((x-\mu)^{T} K^{-1}_{N \times N}\):	
@@ -206,9 +216,8 @@ As noted above,  \ref{alternativa}, this calculation can be implemented in two d
 \gr 1*g+2*h+3*i
 \end{pmatrix} 
 \]
-\caption[Optional: Short caption to appear in List of Figures]{First proposed method for the computation of a single pixel: red, blue and green represent data processed in the first, second and third cycles respectively. Note that the entire deviation data of that pixel gets used every cycle}
+\caption[First proposed method for the matrix multiplication]{First proposed method for the computation of a single pixel: red, blue and green represent data processed in the first, second and third cycles respectively. Note that the entire deviation data of that pixel gets used every cycle}
 \end{figure}
-\pagebreak
 		
 \begin{quote}
 	\(K^{-1}_{N \times N} (x-\mu)\):
@@ -231,12 +240,11 @@ As noted above,  \ref{alternativa}, this calculation can be implemented in two d
 \rb{1*a}+\bb{2*d}+\gb{3*g} & \rb{1*b}+\bb{2*e}+\gb{3*h} & \rb{1*c}+\bb{2*f}+\gb{3*i}
 \end{pmatrix} 
 \]
-\caption[Optional: Short caption to appear in List of Figures]{Second proposed method: red, blue and green represent data processed in the first, second and third cycles respectively. Here only an element of the deviation data gets accessed each cycle.}
+\caption[Second proposed method for the matrix multiplication]{Second proposed method: red, blue and green represent data processed in the first, second and third cycles respectively. Here only an element of the deviation data gets accessed each cycle.}
 \end{figure}
 
 While both methods have equivalent cost in time -the former has the added latency of the adder tree, the latter the latency of the accumulators- and also similar cost in DSP usage, data input by row is less taxing on the CPU and its FIFO structure can be reused for the second multiplication. Henceforth, the second approach was chosen.
 
-\pagebreak
 
 \begin{figure}[h!]
 \centering\textbf{
@@ -257,11 +265,11 @@ The module contains three subprocesses:
 
 
 \subsection{Coordinate sorter}
-This module receives a value and a pair of coordinates every \textit{bands} cycles. These values are written in a BRAM memory that acts as an ordered list. Each entered value is compared with the head of the list, the highest value is saved and the other is saved in a temporary variable, compared with the second value in the list, and so on. Since a value is received each \textit{bands}, the maximum number of possible values to be stored in this list is also \textit{bands}. The rest of the values are discarded. When the last value has been introduced, the module communicates the highest pixels, that is, the most anomalous ones, to the superior module so that they are communicated to the CPU.
-
 \begin{figure}[h!]
 \centering\textbf{
 \includegraphics[height=2.5in]{figures/sort.png}}
 \caption{Schematic of the coordinate sorter}
   \label{fig:sorter}
 \end{figure}
+This module receives a value and a pair of coordinates every \textit{bands} cycles. These values are written in a BRAM memory that acts as an ordered list. Each entered value is compared with the head of the list, the highest value is saved and the other is saved in a temporary variable, compared with the second value in the list, and so on. Since a value is received each \textit{bands}, the maximum number of possible values to be stored in this list is also \textit{bands}. The rest of the values are discarded. When the last value has been introduced, the module communicates the highest pixels, that is, the most anomalous ones, to the superior module so that they are communicated to the CPU.
+
